@@ -2,8 +2,9 @@
   "name": "mcp-config-manager-extension",
   "displayName": "MCP Config Manager",
   "description": "Manage MCP servers and export config for Claude Code/Codex.",
-  "version": "0.2.0",
-  "publisher": "your-publisher",
+  "version": "0.2.1",
+  "publisher": "chihayaanon",
+  "icon": "resources/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/tihaya-anon/mcp-config-manager.git"
@@ -237,7 +238,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && node ./scripts/copy-webview-assets.js",
+    "compile": "node ./scripts/generate-icon.js && tsc -p ./ && node ./scripts/copy-webview-assets.js",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",
@@ -247,6 +248,7 @@
     "@types/node": "^20.14.2",
     "@types/vscode": "^1.90.0",
     "eslint": "^9.4.0",
+    "sharp": "^0.34.5",
     "typescript": "^5.4.5"
   }
 }
