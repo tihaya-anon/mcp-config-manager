@@ -4,6 +4,10 @@
   "description": "Manage MCP servers and export config for Claude Code/Codex.",
   "version": "0.2.0",
   "publisher": "your-publisher",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tihaya-anon/mcp-config-manager.git"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
