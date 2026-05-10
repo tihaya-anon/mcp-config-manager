@@ -25,11 +25,13 @@
       "mcpController": [
         {
           "id": "mcpController.servers",
-          "name": "Servers"
+          "name": "Servers",
+          "icon": "$(server)"
         },
         {
           "id": "mcpController.tools",
-          "name": "Tools"
+          "name": "Tools",
+          "icon": "$(tools)"
         }
       ]
     },
@@ -52,7 +54,7 @@
       {
         "command": "mcpController.toggleMcp",
         "title": "MCP: Toggle Server",
-        "icon": "$(debug-alt)"
+        "icon": "$(run)"
       },
       {
         "command": "mcpController.removeMcp",
