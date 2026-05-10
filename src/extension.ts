@@ -98,7 +98,8 @@ function registerCommands(context: vscode.ExtensionContext, app: AppContext): vo
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (
         event.affectsConfiguration('mcpConfigManager.servers') ||
-        event.affectsConfiguration('mcpConfigManager.definitionStorageScope')
+        event.affectsConfiguration('mcpConfigManager.definitionStorageScope') ||
+        event.affectsConfiguration('mcpConfigManager.export.writeToWorkspace')
       ) {
         refreshAllViews(app);
       }

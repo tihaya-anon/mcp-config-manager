@@ -17,7 +17,7 @@
         {
           "id": "mcpConfigManager",
           "title": "MCP",
-          "icon": "$(plug)"
+          "icon": "resources/mcp.svg"
         }
       ]
     },
@@ -103,6 +103,18 @@
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "mcpConfigManager.addMcp",
+          "when": "view == mcpConfigManager.servers",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mcpConfigManager.refreshServers",
+          "when": "view == mcpConfigManager.servers",
+          "group": "navigation@2"
+        }
+      ],
       "view/item/context": [
         {
           "command": "mcpConfigManager.toggleMcpOn",

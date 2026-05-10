@@ -96,14 +96,16 @@ export class ToolProvider implements vscode.TreeDataProvider<ToolItem> {
   }
 
   getChildren(): ToolItem[] {
+    const config = vscode.workspace.getConfiguration('mcpConfigManager');
+    const exportToWorkspace = config.get<boolean>('export.writeToWorkspace', true);
     const scope = this.store.getDefinitionStorageScope();
     const scopeLabel = scope === 'workspace' ? 'Workspace' : 'User';
+    const exportModeLabel = exportToWorkspace ? 'Workspace Files' : 'Manual Save';
     return [
       new ToolItem("Open Studio", COMMANDS.openStudio, "layout"),
-      new ToolItem("Add Server", COMMANDS.addMcp, "add"),
       new ToolItem("Refresh Servers", COMMANDS.refreshServers, "refresh"),
       new ToolItem(`Definition Scope: ${scopeLabel}`, COMMANDS.toggleDefinitionStorageScope, "database"),
-      new ToolItem("Toggle Export Path Mode", COMMANDS.toggleExportPathMode, "settings-gear"),
+      new ToolItem(`Export Path Mode: ${exportModeLabel}`, COMMANDS.toggleExportPathMode, "settings-gear"),
       new ToolItem("Export Claude", COMMANDS.exportClaude, "export"),
       new ToolItem("Export Codex", COMMANDS.exportCodex, "export"),
       new ToolItem("Preview Template", COMMANDS.previewTemplate, "eye"),
