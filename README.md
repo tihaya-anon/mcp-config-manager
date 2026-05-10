@@ -27,6 +27,9 @@ VS Code extension for MCP server lifecycle management and configurable export.
 - Export enabled servers:
   - Claude Code default path: `.mcp.json`
   - Codex default path: `.codex/config.toml`
+  - Paths are configurable via:
+    - `mcpConfigManager.export.claudeCodePath`
+    - `mcpConfigManager.export.codexPath`
 - Two-layer config model:
   - Definitions are stored in workspace `settings.json` via `mcpConfigManager.servers` (trackable in git)
   - Runtime enable/disable state is stored in extension local state (not tracked)
@@ -34,6 +37,25 @@ VS Code extension for MCP server lifecycle management and configurable export.
 ## Template Engine
 
 Templates are fully customizable. Export now renders **only from template**.
+
+### How to configure templates
+
+- Configure templates by editing string settings:
+  - `mcpConfigManager.export.claudeCodeTemplate`
+  - `mcpConfigManager.export.codexTemplate`
+- The extension currently reads template **strings directly from settings**.
+- External template file path loading (for example, `./templates/codex.toml.hbs`) is **not supported** right now.
+- Recommended workflow:
+  - Keep your template text in workspace `.vscode/settings.json` for portability.
+  - Or maintain a template file in repo and copy/paste its content into the setting when updating.
+
+Example (`.vscode/settings.json`):
+
+```json
+{
+  "mcpConfigManager.export.codexTemplate": "# Codex MCP config\\n{{#each servers}}[mcp_servers.{{tomlKey name}}]\\n{{#if resolved.command}}command = {{toml resolved.command}}\\n{{/if}}{{/each}}"
+}
+```
 
 ### Context fields
 

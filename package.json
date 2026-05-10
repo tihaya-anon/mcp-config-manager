@@ -199,6 +199,18 @@
           "scope": "resource",
           "markdownDescription": "When true, export writes directly to workspace files (`.mcp.json` for Claude Code, `.codex/config.toml` for Codex)."
         },
+        "mcpConfigManager.export.claudeCodePath": {
+          "type": "string",
+          "default": ".mcp.json",
+          "scope": "resource",
+          "markdownDescription": "Export destination for Claude Code when `export.writeToWorkspace` is true. Relative paths are resolved from workspace root; absolute paths are also supported."
+        },
+        "mcpConfigManager.export.codexPath": {
+          "type": "string",
+          "default": ".codex/config.toml",
+          "scope": "resource",
+          "markdownDescription": "Export destination for Codex when `export.writeToWorkspace` is true. Relative paths are resolved from workspace root; absolute paths are also supported."
+        },
         "mcpConfigManager.servers": {
           "type": "array",
           "default": [],

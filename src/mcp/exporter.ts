@@ -211,6 +211,17 @@ async function resolveExportUri(target: ExportTarget): Promise<vscode.Uri | unde
   const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
 
   if (writeToWorkspace && workspaceFolder) {
+    const configuredPath = target === 'claude-code'
+      ? config.get<string>('export.claudeCodePath', '.mcp.json')
+      : config.get<string>('export.codexPath', '.codex/config.toml');
+    const normalized = (configuredPath || '').trim();
+    if (normalized) {
+      if (normalized.startsWith('/') || /^[A-Za-z]:[\\/]/.test(normalized)) {
+        return vscode.Uri.file(normalized);
+      }
+      return vscode.Uri.joinPath(workspaceFolder.uri, ...normalized.split(/[\\/]+/).filter(Boolean));
+    }
+
     if (target === 'claude-code') {
       return vscode.Uri.joinPath(workspaceFolder.uri, '.mcp.json');
     }
