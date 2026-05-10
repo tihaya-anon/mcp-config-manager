@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-05-10
+
+### Added
+- Marketplace-ready screenshots referenced in README.
+- Quick-bootstrap MCP server examples for settings (`http`, `stream`, `uvx-fastmcp`).
+- MIT LICENSE and release metadata for marketplace compliance.
+
+### Changed
+- Publisher set to `chihayaanon` for release publishing.
+- Extension icon now uses generated PNG (`resources/icon.png`) to satisfy marketplace icon requirements.
+- Build pipeline now generates icon from `resources/brand.svg` before compile.
+- README improved with screenshot meanings and clearer template/export guidance.
+- `activationEvents` simplified to empty array (`[]`) to use contribution-based auto activation.
+
 ## [0.2.1] - 2026-05-10
 
 ### Added
