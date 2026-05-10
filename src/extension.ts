@@ -6,136 +6,149 @@ import { createStudioController, previewTemplate } from './mcp/studio';
 import { McpItem, ServerProvider, ToolProvider } from './mcp/tree';
 import { McpServer } from './mcp/types';
 
+interface AppContext {
+  store: McpStore;
+  serverProvider: ServerProvider;
+  toolProvider: ToolProvider;
+  openStudioPanel: (editingId?: string) => void;
+}
+
 export function activate(context: vscode.ExtensionContext): void {
+  const app = createAppContext(context);
+  createViews(app);
+  registerCommands(context, app);
+}
+
+export function deactivate(): void {}
+
+function createAppContext(context: vscode.ExtensionContext): AppContext {
   const store = new McpStore(context);
   const serverProvider = new ServerProvider(store);
   const toolProvider = new ToolProvider(store);
   const studio = createStudioController(store, serverProvider);
 
+  return {
+    store,
+    serverProvider,
+    toolProvider,
+    openStudioPanel: studio.openStudioPanel
+  };
+}
+
+function createViews(app: AppContext): void {
   vscode.window.createTreeView('mcpController.servers', {
-    treeDataProvider: serverProvider
+    treeDataProvider: app.serverProvider
   });
 
   vscode.window.createTreeView('mcpController.tools', {
-    treeDataProvider: toolProvider
+    treeDataProvider: app.toolProvider
   });
-
-  registerCommands(context, store, serverProvider, toolProvider, studio.openStudioPanel);
 }
 
-export function deactivate(): void {}
-
-function registerCommands(
-  context: vscode.ExtensionContext,
-  store: McpStore,
-  serverProvider: ServerProvider,
-  toolProvider: ToolProvider,
-  openStudioPanel: (editingId?: string) => void
-): void {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.openStudio, () => openStudioPanel())
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.addMcp, () => openStudioPanel())
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.editMcp, (item?: McpServer | McpItem) => {
+function registerCommands(context: vscode.ExtensionContext, app: AppContext): void {
+  const commandHandlers: Array<[string, (...args: unknown[]) => unknown]> = [
+    [COMMANDS.openStudio, () => app.openStudioPanel()],
+    [COMMANDS.addMcp, () => app.openStudioPanel()],
+    [COMMANDS.editMcp, (...args: unknown[]) => {
+      const item = args[0] as McpServer | McpItem | undefined;
       const server = item instanceof McpItem ? item.server : item;
-      openStudioPanel(server?.id);
-    })
+      app.openStudioPanel(server?.id);
+    }],
+    [COMMANDS.toggleMcp, async (...args: unknown[]) => {
+      const item = args[0] as McpServer | McpItem | undefined;
+      await toggleServer(app, item, 'Select a server to toggle');
+    }],
+    [COMMANDS.toggleMcpOn, async (...args: unknown[]) => {
+      const item = args[0] as McpServer | McpItem | undefined;
+      await setServerEnabled(app, item, true);
+    }],
+    [COMMANDS.toggleMcpOff, async (...args: unknown[]) => {
+      const item = args[0] as McpServer | McpItem | undefined;
+      await setServerEnabled(app, item, false);
+    }],
+    [COMMANDS.removeMcp, async (...args: unknown[]) => {
+      const item = args[0] as McpServer | McpItem | undefined;
+      await removeServer(app, item);
+    }],
+    [COMMANDS.exportClaude, async () => {
+      await exportToFile(app.store.list(), 'claude-code');
+    }],
+    [COMMANDS.exportCodex, async () => {
+      await exportToFile(app.store.list(), 'codex');
+    }],
+    [COMMANDS.previewTemplate, async () => {
+      await previewTemplate(app.store.list());
+    }],
+    [COMMANDS.toggleWriteToWorkspace, async () => {
+      await toggleWriteToWorkspace();
+    }],
+    [COMMANDS.toggleDefinitionStorageScope, async () => {
+      await toggleDefinitionScope(app);
+    }]
+  ];
+
+  for (const [command, handler] of commandHandlers) {
+    context.subscriptions.push(vscode.commands.registerCommand(command, handler));
+  }
+}
+
+async function removeServer(app: AppContext, item?: McpServer | McpItem): Promise<void> {
+  const server = await resolveServerSelection(app.store, item, 'Select a server to remove');
+  if (!server) {
+    return;
+  }
+
+  const confirmation = await vscode.window.showWarningMessage(
+    `Remove MCP server '${server.name}'?`,
+    { modal: true },
+    'Remove'
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.toggleMcp, async (item?: McpServer | McpItem) => {
-      await toggleServer(store, serverProvider, item, 'Select a server to toggle');
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.toggleMcpOn, async (item?: McpServer | McpItem) => {
-      await setServerEnabled(store, serverProvider, item, true);
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.toggleMcpOff, async (item?: McpServer | McpItem) => {
-      await setServerEnabled(store, serverProvider, item, false);
-    })
-  );
+  if (confirmation !== 'Remove') {
+    return;
+  }
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.removeMcp, async (item?: McpServer | McpItem) => {
-      const server = await resolveServerSelection(store, item, 'Select a server to remove');
+  await runStoreAction(async () => {
+    await app.store.remove(server.id);
+    app.serverProvider.refresh();
+  });
+}
 
-      if (!server) {
-        return;
-      }
+async function toggleServer(
+  app: AppContext,
+  item: McpServer | McpItem | undefined,
+  placeHolder: string
+): Promise<void> {
+  const server = await resolveServerSelection(app.store, item, placeHolder);
+  if (!server) {
+    return;
+  }
 
-      const confirmation = await vscode.window.showWarningMessage(
-        `Remove MCP server '${server.name}'?`,
-        { modal: true },
-        'Remove'
-      );
+  server.enabled = !server.enabled;
 
-      if (confirmation !== 'Remove') {
-        return;
-      }
+  await runStoreAction(async () => {
+    await app.store.upsert(server);
+    app.serverProvider.refresh();
+  });
+}
 
-      try {
-        await store.remove(server.id);
-        serverProvider.refresh();
-      } catch (error) {
-        void vscode.window.showErrorMessage(String((error as Error)?.message || error));
-      }
-    })
-  );
+async function setServerEnabled(
+  app: AppContext,
+  item: McpServer | McpItem | undefined,
+  enabled: boolean
+): Promise<void> {
+  const server = await resolveServerSelection(app.store, item, 'Select a server');
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.exportClaude, async () => {
-      await exportToFile(store.list(), 'claude-code');
-    })
-  );
+  if (!server || server.enabled === enabled) {
+    return;
+  }
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.exportCodex, async () => {
-      await exportToFile(store.list(), 'codex');
-    })
-  );
+  server.enabled = enabled;
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.previewTemplate, async () => {
-      await previewTemplate(store.list());
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.toggleWriteToWorkspace, async () => {
-      const config = vscode.workspace.getConfiguration('mcpController');
-      const current = config.get<boolean>('export.writeToWorkspace', true);
-      const target = !current;
-
-      await config.update(
-        'export.writeToWorkspace',
-        target,
-        vscode.ConfigurationTarget.Workspace
-      );
-
-      void vscode.window.showInformationMessage(
-        `writeToWorkspace is now ${target ? 'ON' : 'OFF'} (workspace setting).`
-      );
-    })
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(COMMANDS.toggleDefinitionStorageScope, async () => {
-      const scope = await store.toggleDefinitionStorageScope();
-      serverProvider.refresh();
-      toolProvider.refresh();
-      void vscode.window.showInformationMessage(
-        `MCP definition storage scope is now ${scope.toUpperCase()}.`
-      );
-    })
-  );
+  await runStoreAction(async () => {
+    await app.store.upsert(server);
+    app.serverProvider.refresh();
+  });
 }
 
 async function resolveServerSelection(
@@ -152,7 +165,6 @@ async function resolveServerSelection(
   }
 
   const servers = store.list();
-
   if (!servers.length) {
     return undefined;
   }
@@ -169,43 +181,31 @@ async function resolveServerSelection(
   return pick?.server;
 }
 
-async function toggleServer(
-  store: McpStore,
-  serverProvider: ServerProvider,
-  item: McpServer | McpItem | undefined,
-  placeHolder: string
-): Promise<void> {
-  const server = await resolveServerSelection(store, item, placeHolder);
+async function toggleWriteToWorkspace(): Promise<void> {
+  const config = vscode.workspace.getConfiguration('mcpController');
+  const current = config.get<boolean>('export.writeToWorkspace', true);
+  const target = !current;
 
-  if (!server) {
-    return;
-  }
+  await config.update('export.writeToWorkspace', target, vscode.ConfigurationTarget.Workspace);
 
-  server.enabled = !server.enabled;
-  try {
-    await store.upsert(server);
-    serverProvider.refresh();
-  } catch (error) {
-    void vscode.window.showErrorMessage(String((error as Error)?.message || error));
-  }
+  void vscode.window.showInformationMessage(
+    `writeToWorkspace is now ${target ? 'ON' : 'OFF'} (workspace setting).`
+  );
 }
 
-async function setServerEnabled(
-  store: McpStore,
-  serverProvider: ServerProvider,
-  item: McpServer | McpItem | undefined,
-  enabled: boolean
-): Promise<void> {
-  const server = await resolveServerSelection(store, item, 'Select a server');
+async function toggleDefinitionScope(app: AppContext): Promise<void> {
+  const scope = await app.store.toggleDefinitionStorageScope();
+  app.serverProvider.refresh();
+  app.toolProvider.refresh();
 
-  if (!server || server.enabled === enabled) {
-    return;
-  }
+  void vscode.window.showInformationMessage(
+    `MCP definition storage scope is now ${scope.toUpperCase()}.`
+  );
+}
 
-  server.enabled = enabled;
+async function runStoreAction(action: () => Promise<void>): Promise<void> {
   try {
-    await store.upsert(server);
-    serverProvider.refresh();
+    await action();
   } catch (error) {
     void vscode.window.showErrorMessage(String((error as Error)?.message || error));
   }
