@@ -1,8 +1,8 @@
 {
   "name": "mcp-controller-extension",
   "displayName": "MCP Controller Extension",
-  "description": "A VS Code extension scaffold in the current directory.",
-  "version": "0.0.1",
+  "description": "Manage MCP servers and export config for Claude Code/Codex.",
+  "version": "0.2.0",
   "publisher": "your-publisher",
   "engines": {
     "vscode": "^1.90.0"
@@ -12,12 +12,103 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mcpController",
+          "title": "MCP",
+          "icon": "$(plug)"
+        }
+      ]
+    },
+    "views": {
+      "mcpController": [
+        {
+          "id": "mcpController.servers",
+          "name": "Servers"
+        },
+        {
+          "id": "mcpController.tools",
+          "name": "Tools"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "mcpController.helloWorld",
-        "title": "MCP Controller: Hello World"
+        "command": "mcpController.openStudio",
+        "title": "MCP: Open Studio",
+        "icon": "$(layout)"
+      },
+      {
+        "command": "mcpController.addMcp",
+        "title": "MCP: Add Server",
+        "icon": "$(add)"
+      },
+      {
+        "command": "mcpController.editMcp",
+        "title": "MCP: Edit Server",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "mcpController.toggleMcp",
+        "title": "MCP: Toggle Server",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "mcpController.removeMcp",
+        "title": "MCP: Remove Server",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "mcpController.exportClaudeCode",
+        "title": "MCP: Export for Claude Code",
+        "icon": "$(export)"
+      },
+      {
+        "command": "mcpController.exportCodex",
+        "title": "MCP: Export for Codex",
+        "icon": "$(export)"
+      },
+      {
+        "command": "mcpController.previewTemplate",
+        "title": "MCP: Preview Template",
+        "icon": "$(eye)"
       }
-    ]
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "mcpController.editMcp",
+          "when": "view == mcpController.servers",
+          "group": "inline@1"
+        },
+        {
+          "command": "mcpController.toggleMcp",
+          "when": "view == mcpController.servers",
+          "group": "inline@2"
+        },
+        {
+          "command": "mcpController.removeMcp",
+          "when": "view == mcpController.servers",
+          "group": "inline@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MCP Controller",
+      "properties": {
+        "mcpController.export.claudeCodeTemplate": {
+          "type": "string",
+          "default": "{{servers_json}}",
+          "markdownDescription": "Template for Claude Code export. Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
+        },
+        "mcpController.export.codexTemplate": {
+          "type": "string",
+          "default": "# Codex MCP config\n{{servers_toml}}",
+          "markdownDescription": "Template for Codex export (TOML). Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
