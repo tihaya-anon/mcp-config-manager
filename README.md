@@ -112,7 +112,7 @@ Expected Codex TOML fragment:
 url = "https://developers.openai.com/mcp"
 ```
 
-### 2) Stream (stdio) example: Time server via npx
+### 2) Stream (stdio) example: Time server via uvx
 
 Source:
 - `@modelcontextprotocol/server-time` from Model Context Protocol servers ecosystem
@@ -127,8 +127,8 @@ Input server in Studio:
   "enabled": true,
   "meta": { "group": "local", "description": "MCP time server" },
   "stream": {
-    "command": "npx",
-    "args": ["-y", "@modelcontextprotocol/server-time"],
+    "command": "uvx",
+    "args": ["mcp-server-time"],
     "env": {}
   }
 }
@@ -138,27 +138,27 @@ Expected Codex TOML fragment (`stream` maps to stdio command form):
 
 ```toml
 [mcp_servers.time]
-command = "npx"
-args = ["-y", "@modelcontextprotocol/server-time"]
+command = "uvx"
+args = ["mcp-server-time"]
 env = {  }
 ```
 
-### 3) UVX FastMCP-style local example: Fetch server via uvx
+### 3) UVX FastMCP example: AWS Knowledge MCP (remote HTTP proxied to stdio)
 
 Source:
-- `mcp-server-fetch` via `uvx` (no local path required)
+- AWS Knowledge MCP official README (`fastmcp` proxy mode)
 
 Input server in Studio:
 
 ```json
 {
   "id": "real-uvx-1",
-  "name": "fetch",
+  "name": "awsKnowledge",
   "type": "uvx-fastmcp",
   "enabled": true,
-  "meta": { "group": "local", "description": "MCP fetch server" },
+  "meta": { "group": "remote", "description": "AWS Knowledge MCP via fastmcp proxy" },
   "uvxFastmcp": {
-    "module": "mcp-server-fetch",
+    "module": "https://knowledge-mcp.global.api.aws",
     "args": [],
     "env": {}
   }
@@ -168,15 +168,18 @@ Input server in Studio:
 Expected Codex TOML fragment:
 
 ```toml
-[mcp_servers.fetch]
+[mcp_servers.awsKnowledge]
 command = "uvx"
-args = ["fastmcp", "run", "mcp-server-fetch"]
+args = ["fastmcp", "run", "https://knowledge-mcp.global.api.aws"]
 env = {  }
 ```
 
 Note:
 - The `uvx-fastmcp` mapping in this extension is `uvx fastmcp run <module> ...args`.
-- If your installed server expects plain `uvx mcp-server-fetch ...`, use `type=stream` with `command=uvx` and `args=["mcp-server-fetch"]`.
+- Use `uvx-fastmcp` for FastMCP-style proxy/runtime scenarios.
+- Use `stream` for plain stdio MCP servers like `mcp-server-time`.
+- For this AWS example, internet access is required.
+- If a server fails during initialize handshake, verify command directly in terminal (`uvx mcp-server-time` or `uvx fastmcp run https://knowledge-mcp.global.api.aws`).
 
 ## Definition Scope
 

@@ -79,17 +79,31 @@ function registerCommands(context: vscode.ExtensionContext, app: AppContext): vo
     [COMMANDS.previewTemplate, async () => {
       await previewTemplate(app.store.list());
     }],
-    [COMMANDS.toggleWriteToWorkspace, async () => {
-      await toggleWriteToWorkspace();
+    [COMMANDS.toggleExportPathMode, async () => {
+      await toggleExportPathMode();
     }],
     [COMMANDS.toggleDefinitionStorageScope, async () => {
       await toggleDefinitionScope(app);
+    }],
+    [COMMANDS.refreshServers, async () => {
+      refreshAllViews(app);
     }]
   ];
 
   for (const [command, handler] of commandHandlers) {
     context.subscriptions.push(vscode.commands.registerCommand(command, handler));
   }
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (
+        event.affectsConfiguration('mcpController.servers') ||
+        event.affectsConfiguration('mcpController.definitionStorageScope')
+      ) {
+        refreshAllViews(app);
+      }
+    })
+  );
 }
 
 async function removeServer(app: AppContext, item?: McpServer | McpItem): Promise<void> {
@@ -181,7 +195,7 @@ async function resolveServerSelection(
   return pick?.server;
 }
 
-async function toggleWriteToWorkspace(): Promise<void> {
+async function toggleExportPathMode(): Promise<void> {
   const config = vscode.workspace.getConfiguration('mcpController');
   const current = config.get<boolean>('export.writeToWorkspace', true);
   const target = !current;
@@ -189,18 +203,22 @@ async function toggleWriteToWorkspace(): Promise<void> {
   await config.update('export.writeToWorkspace', target, vscode.ConfigurationTarget.Workspace);
 
   void vscode.window.showInformationMessage(
-    `writeToWorkspace is now ${target ? 'ON' : 'OFF'} (workspace setting).`
+    `Export path mode is now ${target ? 'Workspace Files (.mcp.json/.codex/config.toml)' : 'Manual Save Dialog'}.`
   );
 }
 
 async function toggleDefinitionScope(app: AppContext): Promise<void> {
   const scope = await app.store.toggleDefinitionStorageScope();
-  app.serverProvider.refresh();
-  app.toolProvider.refresh();
+  refreshAllViews(app);
 
   void vscode.window.showInformationMessage(
     `MCP definition storage scope is now ${scope.toUpperCase()}.`
   );
+}
+
+function refreshAllViews(app: AppContext): void {
+  app.serverProvider.refresh();
+  app.toolProvider.refresh();
 }
 
 async function runStoreAction(action: () => Promise<void>): Promise<void> {

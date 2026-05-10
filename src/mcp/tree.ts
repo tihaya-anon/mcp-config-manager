@@ -101,8 +101,9 @@ export class ToolProvider implements vscode.TreeDataProvider<ToolItem> {
     return [
       new ToolItem("Open Studio", COMMANDS.openStudio, "layout"),
       new ToolItem("Add Server", COMMANDS.addMcp, "add"),
+      new ToolItem("Refresh Servers", COMMANDS.refreshServers, "refresh"),
       new ToolItem(`Definition Scope: ${scopeLabel}`, COMMANDS.toggleDefinitionStorageScope, "database"),
-      new ToolItem("Toggle Workspace Write", COMMANDS.toggleWriteToWorkspace, "settings-gear"),
+      new ToolItem("Toggle Export Path Mode", COMMANDS.toggleExportPathMode, "settings-gear"),
       new ToolItem("Export Claude", COMMANDS.exportClaude, "export"),
       new ToolItem("Export Codex", COMMANDS.exportCodex, "export"),
       new ToolItem("Preview Template", COMMANDS.previewTemplate, "eye"),

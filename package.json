@@ -87,14 +87,19 @@
         "icon": "$(eye)"
       },
       {
-        "command": "mcpController.toggleWriteToWorkspace",
-        "title": "MCP: Toggle Write to Workspace",
+        "command": "mcpController.toggleExportPathMode",
+        "title": "MCP: Toggle Export Path Mode",
         "icon": "$(settings-gear)"
       },
       {
         "command": "mcpController.toggleDefinitionStorageScope",
         "title": "MCP: Toggle Definition Storage Scope",
         "icon": "$(database)"
+      },
+      {
+        "command": "mcpController.refreshServers",
+        "title": "MCP: Refresh Servers",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {

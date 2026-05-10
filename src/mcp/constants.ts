@@ -13,6 +13,7 @@ export const COMMANDS = {
   exportClaude: 'mcpController.exportClaudeCode',
   exportCodex: 'mcpController.exportCodex',
   previewTemplate: 'mcpController.previewTemplate',
-  toggleWriteToWorkspace: 'mcpController.toggleWriteToWorkspace',
-  toggleDefinitionStorageScope: 'mcpController.toggleDefinitionStorageScope'
+  toggleExportPathMode: 'mcpController.toggleExportPathMode',
+  toggleDefinitionStorageScope: 'mcpController.toggleDefinitionStorageScope',
+  refreshServers: 'mcpController.refreshServers'
 } as const;
