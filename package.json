@@ -72,6 +72,26 @@
         "icon": "$(trash)"
       },
       {
+        "command": "mcpConfigManager.groupStartAll",
+        "title": "MCP: Group Start All",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "mcpConfigManager.groupStopAll",
+        "title": "MCP: Group Stop All",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "mcpConfigManager.groupRemoveAll",
+        "title": "MCP: Group Remove All",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "mcpConfigManager.groupRename",
+        "title": "MCP: Group Rename",
+        "icon": "$(edit)"
+      },
+      {
         "command": "mcpConfigManager.exportClaudeCode",
         "title": "MCP: Export for Claude Code",
         "icon": "$(export)"
@@ -127,6 +147,26 @@
           "group": "inline@1"
         },
         {
+          "command": "mcpConfigManager.groupStartAll",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpGroup",
+          "group": "inline@1"
+        },
+        {
+          "command": "mcpConfigManager.groupStopAll",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpGroup",
+          "group": "inline@2"
+        },
+        {
+          "command": "mcpConfigManager.groupRename",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpGroup",
+          "group": "inline@3"
+        },
+        {
+          "command": "mcpConfigManager.groupRemoveAll",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpGroup",
+          "group": "inline@4"
+        },
+        {
           "command": "mcpConfigManager.editMcp",
           "when": "view == mcpConfigManager.servers && (viewItem == mcpServerEnabled || viewItem == mcpServerDisabled)",
           "group": "inline@2"
@@ -180,7 +220,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && node ./scripts/copy-webview-assets.js",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src --ext ts",
     "pretest": "npm run compile && npm run lint",

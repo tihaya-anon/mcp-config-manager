@@ -7,6 +7,7 @@ export class GroupItem extends vscode.TreeItem {
   constructor(public readonly groupName: string) {
     super(groupName, vscode.TreeItemCollapsibleState.Expanded);
     this.contextValue = "mcpGroup";
+    this.description = '';
   }
 }
 
@@ -22,11 +23,6 @@ export class McpItem extends vscode.TreeItem {
       server.enabled ? "circle-filled" : "circle-outline",
     );
     this.contextValue = server.enabled ? "mcpServerEnabled" : "mcpServerDisabled";
-    this.command = {
-      command: COMMANDS.toggleMcp,
-      title: "Toggle MCP",
-      arguments: [server],
-    };
   }
 }
 

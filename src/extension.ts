@@ -3,7 +3,7 @@ import { COMMANDS } from './mcp/constants';
 import { exportToFile } from './mcp/exporter';
 import { McpStore } from './mcp/store';
 import { createStudioController, previewTemplate } from './mcp/studio';
-import { McpItem, ServerProvider, ToolProvider } from './mcp/tree';
+import { GroupItem, McpItem, ServerProvider, ToolProvider } from './mcp/tree';
 import { McpServer } from './mcp/types';
 
 interface AppContext {
@@ -70,6 +70,22 @@ function registerCommands(context: vscode.ExtensionContext, app: AppContext): vo
       const item = args[0] as McpServer | McpItem | undefined;
       await removeServer(app, item);
     }],
+    [COMMANDS.groupStartAll, async (...args: unknown[]) => {
+      const group = args[0] as GroupItem | undefined;
+      await setGroupEnabled(app, group, true);
+    }],
+    [COMMANDS.groupStopAll, async (...args: unknown[]) => {
+      const group = args[0] as GroupItem | undefined;
+      await setGroupEnabled(app, group, false);
+    }],
+    [COMMANDS.groupRemoveAll, async (...args: unknown[]) => {
+      const group = args[0] as GroupItem | undefined;
+      await removeGroup(app, group);
+    }],
+    [COMMANDS.groupRename, async (...args: unknown[]) => {
+      const group = args[0] as GroupItem | undefined;
+      await renameGroup(app, group);
+    }],
     [COMMANDS.exportClaude, async () => {
       await exportToFile(app.store.list(), 'claude-code');
     }],
@@ -105,6 +121,73 @@ function registerCommands(context: vscode.ExtensionContext, app: AppContext): vo
       }
     })
   );
+}
+
+async function setGroupEnabled(app: AppContext, item: GroupItem | undefined, enabled: boolean): Promise<void> {
+  const groupName = item?.groupName;
+  if (!groupName) {
+    return;
+  }
+
+  await runStoreAction(async () => {
+    const changed = await app.store.setGroupEnabled(groupName, enabled);
+    if (changed > 0) {
+      app.serverProvider.refresh();
+    }
+  });
+}
+
+async function removeGroup(app: AppContext, item: GroupItem | undefined): Promise<void> {
+  const groupName = item?.groupName;
+  if (!groupName) {
+    return;
+  }
+
+  const confirmation = await vscode.window.showWarningMessage(
+    `Remove all servers in group '${groupName}'?`,
+    { modal: true },
+    'Remove'
+  );
+
+  if (confirmation !== 'Remove') {
+    return;
+  }
+
+  await runStoreAction(async () => {
+    const removed = await app.store.removeGroup(groupName);
+    if (removed > 0) {
+      app.serverProvider.refresh();
+    }
+  });
+}
+
+async function renameGroup(app: AppContext, item: GroupItem | undefined): Promise<void> {
+  const oldName = item?.groupName;
+  if (!oldName) {
+    return;
+  }
+
+  const newName = await vscode.window.showInputBox({
+    prompt: `Rename group '${oldName}' to`,
+    value: oldName,
+    validateInput: (value) => value.trim() ? undefined : 'Group name cannot be empty'
+  });
+
+  if (!newName) {
+    return;
+  }
+
+  const normalized = newName.trim();
+  if (normalized === oldName) {
+    return;
+  }
+
+  await runStoreAction(async () => {
+    const changed = await app.store.renameGroup(oldName, normalized);
+    if (changed > 0) {
+      app.serverProvider.refresh();
+    }
+  });
 }
 
 async function removeServer(app: AppContext, item?: McpServer | McpItem): Promise<void> {

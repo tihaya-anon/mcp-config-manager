@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{nonce}}';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Studio</title>
+    <style>
+      {{styles}}
+    </style>
+  </head>
+  <body>
+    <h2>MCP Studio</h2>
+    <div class="row">
+      <label>Existing Servers</label>
+      <div class="custom-select" id="existingSelect">
+        <button
+          type="button"
+          class="custom-select-trigger"
+          id="existingTrigger"
+        ></button>
+        <div class="custom-select-menu hidden" id="existingMenu"></div>
+        <input id="existing" class="visually-hidden" />
+      </div>
+    </div>
+    <div class="topbar">
+      <div class="row"><label>Name</label><input id="name" /></div>
+      <div class="row">
+        <label>Type</label>
+        <div class="custom-select" id="typeSelect">
+          <button
+            type="button"
+            class="custom-select-trigger"
+            id="typeTrigger"
+          ></button>
+          <div class="custom-select-menu hidden" id="typeMenu"></div>
+          <input id="type" class="visually-hidden" />
+        </div>
+      </div>
+      <div class="row">
+        <label>Enabled</label
+        ><button id="enabledToggle" class="toggle-btn" type="button">
+          Enabled: On
+        </button>
+      </div>
+    </div>
+    <div class="row">
+      <label>Group</label>
+      <div class="custom-select" id="groupSelect">
+        <button
+          type="button"
+          class="custom-select-trigger"
+          id="groupTrigger"
+        ></button>
+        <div class="custom-select-menu hidden" id="groupMenu"></div>
+        <input id="group" class="visually-hidden" />
+      </div>
+      <input
+        id="groupCustom"
+        class="hidden"
+        placeholder="custom group name"
+        style="margin-top: 8px"
+      />
+    </div>
+    <div class="grid">
+      <div id="httpCard" class="card">
+        <h4>HTTP</h4>
+        <div class="row"><label>ID (editing)</label><input id="id" /></div>
+        <div class="row">
+          <label>Description</label><input id="description" />
+        </div>
+        <div class="row">
+          <label>HTTP URL</label
+          ><input id="httpUrl" placeholder="https://example.com/mcp" />
+        </div>
+        <div class="row">
+          <label>HTTP Headers JSON</label><textarea id="httpHeaders"></textarea>
+        </div>
+      </div>
+      <div id="runtimeCard" class="card">
+        <h4>Runtime</h4>
+        <div class="row">
+          <label>ID (editing)</label><input id="idRuntime" />
+        </div>
+        <div class="row">
+          <label>Description</label><input id="descriptionRuntime" />
+        </div>
+        <div class="row">
+          <label>Command (stream)</label
+          ><input id="command" placeholder="node" />
+        </div>
+        <div class="row">
+          <label>Module (uvx fastmcp)</label
+          ><input id="module" placeholder="my_server.main:app" />
+        </div>
+        <div class="row">
+          <label>Args (space separated)</label><input id="args" />
+        </div>
+        <div class="row">
+          <label>Env JSON</label><textarea id="env"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="actions row primary-actions">
+      <button id="save" type="button">Save Server</button>
+      <button id="new" type="button">New Server</button>
+    </div>
+    <h3>Paste JSON</h3>
+    <div class="row pastebar">
+      <button id="pasteJson" type="button">Paste JSON</button>
+      <button id="copyJson" type="button">Copy JSON</button>
+      <button id="applyJson" type="button">Apply JSON to Form</button>
+      <button id="formatJson" type="button">Format JSON</button>
+      <span id="jsonStatus"></span>
+    </div>
+    <textarea
+      id="jsonEditor"
+      placeholder="Paste a McpServer JSON object here"
+    ></textarea>
+    <h3>Template Preview</h3>
+    <div class="row previewbar">
+      <div class="custom-select" id="targetSelect">
+        <button
+          type="button"
+          class="custom-select-trigger"
+          id="targetTrigger"
+        ></button>
+        <div class="custom-select-menu hidden" id="targetMenu"></div>
+        <input id="target" class="visually-hidden" />
+      </div>
+      <button id="previewBtn" type="button">Preview Enabled Servers</button>
+    </div>
+    <pre id="preview"></pre>
+    <script nonce="{{nonce}}">
+      const vscode = acquireVsCodeApi(); const editingId = {{editingId}}; {{script}}
+    </script>
+  </body>
+</html>

@@ -53,6 +53,74 @@ export class McpStore {
     await this.saveStates(states);
   }
 
+  async setGroupEnabled(groupName: string, enabled: boolean): Promise<number> {
+    const list = this.list().filter(
+      (server) => (server.meta?.group?.trim() || DEFAULT_GROUP) === groupName
+    );
+    if (!list.length) {
+      return 0;
+    }
+
+    const states = this.getStates();
+    for (const server of list) {
+      states[server.id] = { enabled };
+    }
+    await this.saveStates(states);
+    return list.length;
+  }
+
+  async removeGroup(groupName: string): Promise<number> {
+    const targetScope = this.getDefinitionStorageScope();
+    const scopedDefinitions = this.getDefinitionsFromScope(targetScope);
+    const toRemoveIds = scopedDefinitions
+      .filter((server) => (server.meta?.group?.trim() || DEFAULT_GROUP) === groupName)
+      .map((server) => server.id);
+
+    if (!toRemoveIds.length) {
+      return 0;
+    }
+
+    await this.saveDefinitions(
+      scopedDefinitions.filter((server) => !toRemoveIds.includes(server.id)),
+      targetScope
+    );
+
+    const states = this.getStates();
+    for (const id of toRemoveIds) {
+      delete states[id];
+    }
+    await this.saveStates(states);
+    return toRemoveIds.length;
+  }
+
+  async renameGroup(oldName: string, newName: string): Promise<number> {
+    const targetScope = this.getDefinitionStorageScope();
+    const scopedDefinitions = this.getDefinitionsFromScope(targetScope);
+    let changed = 0;
+
+    const updated = scopedDefinitions.map((server) => {
+      const group = server.meta?.group?.trim() || DEFAULT_GROUP;
+      if (group !== oldName) {
+        return server;
+      }
+      changed += 1;
+      return {
+        ...server,
+        meta: {
+          ...(server.meta || {}),
+          group: newName
+        }
+      };
+    });
+
+    if (!changed) {
+      return 0;
+    }
+
+    await this.saveDefinitions(updated, targetScope);
+    return changed;
+  }
+
   getDefinitionStorageScope(): DefinitionScope {
     const config = vscode.workspace.getConfiguration(EXT_NS);
     const scope = config.get<string>('definitionStorageScope', 'workspace');

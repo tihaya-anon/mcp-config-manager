@@ -1,0 +1,42 @@
+body{font-family:var(--vscode-font-family);padding:16px;max-width:960px;margin:0 auto}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+label{display:block;font-size:12px;margin-bottom:6px}
+input,textarea,button{width:100%;box-sizing:border-box;background:var(--vscode-input-background);color:var(--vscode-input-foreground);border:1px solid var(--vscode-input-border);border-radius:8px;transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease}
+input,textarea{padding:8px}
+input,button{height:36px}
+input:hover,textarea:hover{border-color:var(--vscode-focusBorder)}
+input:focus,textarea:focus{outline:none;border-color:var(--vscode-focusBorder);box-shadow:0 0 0 2px color-mix(in srgb, var(--vscode-focusBorder) 30%, transparent)}
+input:disabled,textarea:disabled{cursor:not-allowed;opacity:.65}
+button{cursor:pointer;padding:8px 12px}
+button:hover{border-color:var(--vscode-focusBorder)}
+button:active{transform:translateY(1px)}
+textarea{min-height:92px}
+.row{margin-bottom:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions button{width:auto}
+#preview{white-space:pre-wrap;background:var(--vscode-editor-background);padding:12px;border:1px solid var(--vscode-panel-border);min-height:180px;border-radius:8px}
+.card{border:1px solid var(--vscode-panel-border);border-radius:8px;padding:14px}
+.hidden{display:none}
+.topbar{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;margin-bottom:12px;align-items:end}
+.toggle-btn{width:auto;min-width:120px}
+.toggle-on{color:#2e7d32}
+.toggle-off{color:#b71c1c}
+.primary-actions{padding-top:12px;justify-content:center}
+.previewbar{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:end}
+.pastebar{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:10px;align-items:center}
+.pastebar #jsonStatus{grid-column:1/-1}
+.custom-select{position:relative;width:100%}
+.custom-select-trigger{position:relative;width:100%;height:36px;text-align:left;padding:8px 32px 8px 8px;background:var(--vscode-input-background);color:var(--vscode-input-foreground);border:1px solid var(--vscode-input-border);border-radius:8px}
+.custom-select-trigger:hover{border-color:var(--vscode-focusBorder)}
+.custom-select.open .custom-select-trigger{border-color:var(--vscode-focusBorder);box-shadow:0 0 0 2px color-mix(in srgb, var(--vscode-focusBorder) 30%, transparent)}
+.custom-select-trigger::after{content:'';position:absolute;right:12px;top:50%;width:8px;height:8px;border-right:2px solid var(--vscode-input-foreground);border-bottom:2px solid var(--vscode-input-foreground);transform:translateY(-65%) rotate(45deg);opacity:.85;transition:transform .15s ease}
+.custom-select.open .custom-select-trigger::after{transform:translateY(-35%) rotate(-135deg)}
+.custom-select-menu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:50;background:var(--vscode-dropdown-background,var(--vscode-editor-background));border:1px solid var(--vscode-dropdown-border,var(--vscode-panel-border));border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.24);padding:4px;max-height:220px;overflow:auto}
+.custom-select-menu.hidden{display:none}
+.custom-select-option{display:block;width:100%;height:auto;text-align:left;background:transparent;color:var(--vscode-dropdown-foreground,var(--vscode-editor-foreground));border:none;border-radius:8px;padding:8px 10px;cursor:pointer}
+.custom-select-option:hover,.custom-select-option:focus{background:var(--vscode-list-hoverBackground);color:var(--vscode-list-hoverForeground,var(--vscode-editor-foreground));border:none;outline:none;box-shadow:none;transform:none}
+.custom-select-option.active{background:var(--vscode-list-activeSelectionBackground);color:var(--vscode-list-activeSelectionForeground)}
+.custom-select-option:active{transform:none}
+.visually-hidden{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#jsonEditor{min-height:220px;font-family:var(--vscode-editor-font-family, monospace)}
+#jsonStatus{font-size:12px;opacity:.8}
