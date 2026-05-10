@@ -44,6 +44,62 @@ Shows the full preview workflow in one screen:
    - **Export Claude**
    - **Export Codex**
 
+## Example Server Config
+
+You can paste the following into workspace settings (`.vscode/settings.json`) to bootstrap three real-world examples (`http`, `stream`, `uvx-fastmcp`):
+
+```json
+{
+  "mcpConfigManager.export.writeToWorkspace": true,
+  "mcpConfigManager.servers": [
+    {
+      "id": "real-http-1",
+      "name": "openaiDeveloperDocs",
+      "type": "http",
+      "meta": {
+        "description": "OpenAI Docs MCP",
+        "group": "remote"
+      },
+      "http": {
+        "url": "https://developers.openai.com/mcp"
+      }
+    },
+    {
+      "id": "real-stream-1",
+      "name": "time",
+      "type": "stream",
+      "meta": {
+        "description": "MCP time server",
+        "group": "local"
+      },
+      "stream": {
+        "command": "uvx",
+        "args": ["mcp-server-time"],
+        "env": {}
+      }
+    },
+    {
+      "id": "real-uvx-1",
+      "name": "awsKnowledge",
+      "type": "uvx-fastmcp",
+      "meta": {
+        "description": "AWS Knowledge MCP via fastmcp proxy",
+        "group": "remote"
+      },
+      "uvxFastmcp": {
+        "module": "https://knowledge-mcp.global.api.aws",
+        "args": [],
+        "env": {}
+      }
+    }
+  ]
+}
+```
+
+Notes:
+- `stream` / `uvx-fastmcp` examples require `uvx` available in your environment.
+- Remote examples require network access.
+
 ## Core Features
 
 - Sidebar container: `MCP Manager`
