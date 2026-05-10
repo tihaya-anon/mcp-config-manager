@@ -17,7 +17,11 @@ function readTemplateFile(fileName: string): string {
 }
 
 function render(template: string, vars: Record<string, string>): string {
-  return template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, key: string) => vars[key] ?? '');
+  return template
+    .replace(/__NONCE__/g, vars.nonce ?? '')
+    .replace(/__EDITING_ID__/g, vars.editingId ?? 'null')
+    .replace(/__STYLES__/g, vars.styles ?? '')
+    .replace(/__SCRIPT__/g, vars.script ?? '');
 }
 
 export function buildStudioHtml(nonce: string, editingId: string): string {

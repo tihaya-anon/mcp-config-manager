@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{nonce}}';"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-__NONCE__';"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MCP Studio</title>
     <style>
-      {{styles}}
+      __STYLES__
     </style>
   </head>
   <body>
@@ -120,7 +120,7 @@
       id="jsonEditor"
       placeholder="Paste a McpServer JSON object here"
     ></textarea>
-    <h3>Template Preview</h3>
+    <h3>Preview Template</h3>
     <div class="row previewbar">
       <div class="custom-select" id="targetSelect">
         <button
@@ -134,8 +134,8 @@
       <button id="previewBtn" type="button">Preview Enabled Servers</button>
     </div>
     <pre id="preview"></pre>
-    <script nonce="{{nonce}}">
-      const vscode = acquireVsCodeApi(); const editingId = {{editingId}}; {{script}}
+    <script nonce="__NONCE__">
+      const vscode = acquireVsCodeApi(); const editingId = __EDITING_ID__; __SCRIPT__
     </script>
   </body>
 </html>
