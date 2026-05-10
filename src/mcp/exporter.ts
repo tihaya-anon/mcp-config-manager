@@ -7,8 +7,10 @@ interface TemplateContext {
   target: ExportTarget;
   servers: Array<McpServer & { resolved: Record<string, unknown> }>;
   servers_by_name: Record<string, McpServer & { resolved: Record<string, unknown> }>;
+  servers_resolved_by_name: Record<string, Record<string, unknown>>;
   servers_raw_json: string;
   servers_by_name_json: string;
+  servers_resolved_by_name_json: string;
 }
 
 export async function exportToFile(
@@ -49,16 +51,20 @@ function createTemplateContext(servers: McpServer[], target: ExportTarget): Temp
   }));
 
   const byName: Record<string, McpServer & { resolved: Record<string, unknown> }> = {};
+  const resolvedByName: Record<string, Record<string, unknown>> = {};
   for (const server of enrichedServers) {
     byName[server.name] = server;
+    resolvedByName[server.name] = server.resolved;
   }
 
   return {
     target,
     servers: enrichedServers,
     servers_by_name: byName,
+    servers_resolved_by_name: resolvedByName,
     servers_raw_json: JSON.stringify(enrichedServers, null, 2),
-    servers_by_name_json: JSON.stringify(byName, null, 2)
+    servers_by_name_json: JSON.stringify(byName, null, 2),
+    servers_resolved_by_name_json: JSON.stringify(resolvedByName, null, 2)
   };
 }
 
@@ -68,13 +74,13 @@ function getTemplate(target: ExportTarget): string {
   if (target === 'claude-code') {
     return (
       config.get<string>('export.claudeCodeTemplate') ??
-      '{\n  "mcpServers": {{json servers_by_name}}\n}'
+      '{\n  "mcpServers": {{json servers_resolved_by_name}}\n}'
     );
   }
 
   return (
     config.get<string>('export.codexTemplate') ??
-    '# Codex MCP config\n{{#each servers}}[mcp_servers.{{tomlKey name}}]\n{{#if resolved.type}}type = {{toml resolved.type}}\n{{/if}}{{#if resolved.url}}url = {{toml resolved.url}}\n{{/if}}{{#if resolved.command}}command = {{toml resolved.command}}\n{{/if}}{{#if resolved.args}}args = {{toml resolved.args}}\n{{/if}}{{#if resolved.headers}}headers = {{toml resolved.headers}}\n{{/if}}{{#if resolved.env}}env = {{toml resolved.env}}\n{{/if}}\n{{/each}}'
+    '# Codex MCP config\n{{#each servers}}[mcp_servers.{{tomlKey name}}]\n{{#if resolved.url}}url = {{toml resolved.url}}\n{{/if}}{{#if resolved.headers}}http_headers = {{toml resolved.headers}}\n{{/if}}{{#if resolved.command}}command = {{toml resolved.command}}\n{{/if}}{{#if resolved.args}}args = {{toml resolved.args}}\n{{/if}}{{#if resolved.env}}env = {{toml resolved.env}}\n{{/if}}\n{{/each}}'
   );
 }
 

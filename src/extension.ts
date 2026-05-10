@@ -9,6 +9,7 @@ import { McpServer } from './mcp/types';
 export function activate(context: vscode.ExtensionContext): void {
   const store = new McpStore(context);
   const serverProvider = new ServerProvider(store);
+  const toolProvider = new ToolProvider(store);
   const studio = createStudioController(store, serverProvider);
 
   vscode.window.createTreeView('mcpController.servers', {
@@ -16,10 +17,10 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 
   vscode.window.createTreeView('mcpController.tools', {
-    treeDataProvider: new ToolProvider()
+    treeDataProvider: toolProvider
   });
 
-  registerCommands(context, store, serverProvider, studio.openStudioPanel);
+  registerCommands(context, store, serverProvider, toolProvider, studio.openStudioPanel);
 }
 
 export function deactivate(): void {}
@@ -28,6 +29,7 @@ function registerCommands(
   context: vscode.ExtensionContext,
   store: McpStore,
   serverProvider: ServerProvider,
+  toolProvider: ToolProvider,
   openStudioPanel: (editingId?: string) => void
 ): void {
   context.subscriptions.push(
@@ -79,8 +81,12 @@ function registerCommands(
         return;
       }
 
-      await store.remove(server.id);
-      serverProvider.refresh();
+      try {
+        await store.remove(server.id);
+        serverProvider.refresh();
+      } catch (error) {
+        void vscode.window.showErrorMessage(String((error as Error)?.message || error));
+      }
     })
   );
 
@@ -116,6 +122,17 @@ function registerCommands(
 
       void vscode.window.showInformationMessage(
         `writeToWorkspace is now ${target ? 'ON' : 'OFF'} (workspace setting).`
+      );
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.toggleDefinitionStorageScope, async () => {
+      const scope = await store.toggleDefinitionStorageScope();
+      serverProvider.refresh();
+      toolProvider.refresh();
+      void vscode.window.showInformationMessage(
+        `MCP definition storage scope is now ${scope.toUpperCase()}.`
       );
     })
   );
@@ -165,8 +182,12 @@ async function toggleServer(
   }
 
   server.enabled = !server.enabled;
-  await store.upsert(server);
-  serverProvider.refresh();
+  try {
+    await store.upsert(server);
+    serverProvider.refresh();
+  } catch (error) {
+    void vscode.window.showErrorMessage(String((error as Error)?.message || error));
+  }
 }
 
 async function setServerEnabled(
@@ -182,6 +203,10 @@ async function setServerEnabled(
   }
 
   server.enabled = enabled;
-  await store.upsert(server);
-  serverProvider.refresh();
+  try {
+    await store.upsert(server);
+    serverProvider.refresh();
+  } catch (error) {
+    void vscode.window.showErrorMessage(String((error as Error)?.message || error));
+  }
 }

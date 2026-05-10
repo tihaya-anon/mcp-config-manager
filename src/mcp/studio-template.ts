@@ -32,7 +32,7 @@ button:hover{border-color:var(--vscode-focusBorder)}
 button:active{transform:translateY(1px)}
 textarea{min-height:92px}
 .row{margin-bottom:12px}
-.actions{display:flex;gap:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
 .actions button{width:auto}
 #preview{white-space:pre-wrap;background:var(--vscode-editor-background);padding:12px;border:1px solid var(--vscode-panel-border);min-height:180px;border-radius:8px}
 .card{border:1px solid var(--vscode-panel-border);border-radius:8px;padding:14px}
@@ -40,7 +40,9 @@ textarea{min-height:92px}
 .topbar{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;margin-bottom:12px;align-items:end}
 .toggle-btn{min-width:140px}
 .toggle-on{border-color:#2e7d32;color:#2e7d32}
-.toggle-off{border-color:#b71c1c;color:#b71c1c}`;
+.toggle-off{border-color:#b71c1c;color:#b71c1c}
+#jsonEditor{min-height:220px;font-family:var(--vscode-editor-font-family, monospace)}
+#jsonStatus{font-size:12px;opacity:.8}`;
 }
 
 function buildBody(): string {
@@ -74,6 +76,15 @@ function buildBody(): string {
 <button id="save" type="button">Save Server</button>
 <button id="new" type="button">New Server</button>
 </div>
+<h3>Paste JSON</h3>
+<div class="actions row">
+<button id="pasteJson" type="button">Paste JSON</button>
+<button id="copyJson" type="button">Copy JSON</button>
+<button id="applyJson" type="button">Apply JSON to Form</button>
+<button id="formatJson" type="button">Format JSON</button>
+<span id="jsonStatus"></span>
+</div>
+<textarea id="jsonEditor" placeholder='Paste a McpServer JSON object here'></textarea>
 <h3>Template Preview</h3>
 <div class="actions row">
 <select id="target"><option value="claude-code">claude-code</option><option value="codex">codex</option></select>
@@ -86,6 +97,13 @@ function buildScript(): string {
   return `const $ = (id) => document.getElementById(id);
 let servers = [];
 let enabledState = true;
+let isSyncing = false;
+
+function setStatus(text, isError) {
+  const el = $('jsonStatus');
+  el.textContent = text || '';
+  el.style.color = isError ? 'var(--vscode-errorForeground)' : 'var(--vscode-descriptionForeground)';
+}
 
 function setEnabledVisual(){
   const btn = $('enabledToggle');
@@ -100,23 +118,78 @@ function setEnabledVisual(){
   }
 }
 
+function formToServer() {
+  const type = $('type').value;
+  const isHttp = type === 'http';
+  const idValue = isHttp ? $('id').value : $('idRuntime').value;
+  const descValue = isHttp ? $('description').value : $('descriptionRuntime').value;
+  const server = {
+    id: idValue || '',
+    name: $('name').value || '',
+    type,
+    enabled: enabledState,
+    meta: {
+      group: $('group').value || 'default',
+      description: descValue || undefined
+    }
+  };
+
+  if (type === 'http') {
+    server.http = {
+      url: $('httpUrl').value || '',
+      headers: parseJsonSafe($('httpHeaders').value)
+    };
+  }
+
+  if (type === 'stream') {
+    server.stream = {
+      command: $('command').value || '',
+      args: splitArgs($('args').value || ''),
+      env: parseJsonSafe($('env').value)
+    };
+  }
+
+  if (type === 'uvx-fastmcp') {
+    server.uvxFastmcp = {
+      module: $('module').value || '',
+      args: splitArgs($('args').value || ''),
+      env: parseJsonSafe($('env').value)
+    };
+  }
+
+  return server;
+}
+
+function refreshJsonFromForm() {
+  if (isSyncing) return;
+  isSyncing = true;
+  try {
+    $('jsonEditor').value = JSON.stringify(formToServer(), null, 2);
+    setStatus('JSON synced from form', false);
+  } finally {
+    isSyncing = false;
+  }
+}
+
 function fill(server){
-  $('id').value = server?.id || '';
-  $('idRuntime').value = server?.id || '';
-  $('name').value = server?.name || '';
-  $('type').value = server?.type || 'http';
-  enabledState = Boolean(server?.enabled ?? true);
+  const value = server || {};
+  $('id').value = value.id || '';
+  $('idRuntime').value = value.id || '';
+  $('name').value = value.name || '';
+  $('type').value = value.type || 'http';
+  enabledState = Boolean(value.enabled ?? true);
   setEnabledVisual();
-  $('group').value = server?.meta?.group || 'default';
-  $('description').value = server?.meta?.description || '';
-  $('descriptionRuntime').value = server?.meta?.description || '';
-  $('httpUrl').value = server?.http?.url || '';
-  $('httpHeaders').value = server?.http?.headers ? JSON.stringify(server.http.headers, null, 2) : '';
-  $('command').value = server?.stream?.command || '';
-  $('module').value = server?.uvxFastmcp?.module || '';
-  $('args').value = (server?.stream?.args || server?.uvxFastmcp?.args || []).join(' ');
-  $('env').value = server?.stream?.env ? JSON.stringify(server.stream.env, null, 2) : (server?.uvxFastmcp?.env ? JSON.stringify(server.uvxFastmcp.env, null, 2) : '');
+  $('group').value = value.meta?.group || 'default';
+  $('description').value = value.meta?.description || '';
+  $('descriptionRuntime').value = value.meta?.description || '';
+  $('httpUrl').value = value.http?.url || '';
+  $('httpHeaders').value = value.http?.headers ? JSON.stringify(value.http.headers, null, 2) : '';
+  $('command').value = value.stream?.command || '';
+  $('module').value = value.uvxFastmcp?.module || '';
+  $('args').value = (value.stream?.args || value.uvxFastmcp?.args || []).join(' ');
+  $('env').value = value.stream?.env ? JSON.stringify(value.stream.env, null, 2) : (value.uvxFastmcp?.env ? JSON.stringify(value.uvxFastmcp.env, null, 2) : '');
   syncTypeUi();
+  refreshJsonFromForm();
 }
 
 function loadSelect(){
@@ -125,16 +198,37 @@ function loadSelect(){
   if (editingId) sel.value = editingId;
 }
 
+function applyJsonToForm() {
+  const raw = $('jsonEditor').value || '';
+  try {
+    const parsed = JSON.parse(raw);
+    fill(parsed);
+    setStatus('JSON applied to form', false);
+  } catch (err) {
+    setStatus('Invalid JSON: ' + (err?.message || String(err)), true);
+  }
+}
+
+function splitArgs(input) {
+  return input.split(' ').map((x) => x.trim()).filter(Boolean);
+}
+
+function parseJsonSafe(raw) {
+  if (!raw || !raw.trim()) return undefined;
+  try { return JSON.parse(raw); } catch { return undefined; }
+}
+
 $('enabledToggle').addEventListener('click', ()=> {
   enabledState = !enabledState;
   setEnabledVisual();
+  refreshJsonFromForm();
 });
 $('existing').addEventListener('change', (e)=>{
   const id = e.target.value;
   fill(servers.find(s => s.id === id));
 });
 $('new').addEventListener('click', ()=> fill(undefined));
-$('type').addEventListener('change', ()=> syncTypeUi());
+$('type').addEventListener('change', ()=> { syncTypeUi(); refreshJsonFromForm(); });
 $('save').addEventListener('click', ()=> {
   const isHttp = $('type').value === 'http';
   const idValue = isHttp ? $('id').value : $('idRuntime').value;
@@ -145,6 +239,37 @@ $('save').addEventListener('click', ()=> {
   }});
 });
 $('previewBtn').addEventListener('click', ()=> vscode.postMessage({ type:'preview', target:$('target').value }));
+$('applyJson').addEventListener('click', applyJsonToForm);
+$('formatJson').addEventListener('click', ()=> {
+  try {
+    $('jsonEditor').value = JSON.stringify(JSON.parse($('jsonEditor').value || '{}'), null, 2);
+    setStatus('JSON formatted', false);
+  } catch (err) {
+    setStatus('Invalid JSON: ' + (err?.message || String(err)), true);
+  }
+});
+$('pasteJson').addEventListener('click', async ()=> {
+  try {
+    const text = await navigator.clipboard.readText();
+    $('jsonEditor').value = text || '';
+    applyJsonToForm();
+  } catch (err) {
+    setStatus('Paste failed. Browser clipboard permission denied.', true);
+  }
+});
+$('copyJson').addEventListener('click', async ()=> {
+  try {
+    await navigator.clipboard.writeText($('jsonEditor').value || '');
+    setStatus('JSON copied', false);
+  } catch (err) {
+    setStatus('Copy failed. Browser clipboard permission denied.', true);
+  }
+});
+
+['name','group','id','idRuntime','description','descriptionRuntime','httpUrl','httpHeaders','command','module','args','env'].forEach((id)=>{
+  const el=$(id);
+  if(el){ el.addEventListener('input', refreshJsonFromForm); }
+});
 
 window.addEventListener('message', (ev)=>{
   const msg = ev.data;

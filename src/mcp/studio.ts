@@ -43,9 +43,13 @@ export function createStudioController(
             return;
           }
 
-          await store.upsert(parsed.server);
-          serverProvider.refresh();
-          studioPanel?.webview.postMessage({ type: 'saved', id: parsed.server.id });
+          try {
+            await store.upsert(parsed.server);
+            serverProvider.refresh();
+            studioPanel?.webview.postMessage({ type: 'saved', id: parsed.server.id });
+          } catch (error) {
+            void vscode.window.showErrorMessage(String((error as Error)?.message || error));
+          }
           return;
         }
 

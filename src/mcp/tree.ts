@@ -81,14 +81,26 @@ class ToolItem extends vscode.TreeItem {
 }
 
 export class ToolProvider implements vscode.TreeDataProvider<ToolItem> {
+  private readonly treeChangeEmitter = new vscode.EventEmitter<void>();
+  readonly onDidChangeTreeData = this.treeChangeEmitter.event;
+
+  constructor(private readonly store: McpStore) {}
+
+  refresh(): void {
+    this.treeChangeEmitter.fire();
+  }
+
   getTreeItem(element: ToolItem): vscode.TreeItem {
     return element;
   }
 
   getChildren(): ToolItem[] {
+    const scope = this.store.getDefinitionStorageScope();
+    const scopeLabel = scope === 'workspace' ? 'Workspace' : 'User';
     return [
       new ToolItem("Open Studio", COMMANDS.openStudio, "layout"),
       new ToolItem("Add Server", COMMANDS.addMcp, "add"),
+      new ToolItem(`Definition Scope: ${scopeLabel}`, COMMANDS.toggleDefinitionStorageScope, "database"),
       new ToolItem("Toggle Workspace Write", COMMANDS.toggleWriteToWorkspace, "settings-gear"),
       new ToolItem("Export Claude", COMMANDS.exportClaude, "export"),
       new ToolItem("Export Codex", COMMANDS.exportCodex, "export"),

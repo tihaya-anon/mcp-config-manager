@@ -115,8 +115,14 @@ export function toTargetServerConfig(
   target: ExportTarget
 ): Record<string, unknown> {
   if (server.type === 'http' && server.http) {
+    if (target === 'claude-code') {
+      return {
+        type: 'http',
+        url: server.http.url,
+        headers: server.http.headers
+      };
+    }
     return {
-      type: 'http',
       url: server.http.url,
       headers: server.http.headers
     };
@@ -124,7 +130,6 @@ export function toTargetServerConfig(
 
   if (server.type === 'stream' && server.stream) {
     return {
-      type: target === 'codex' ? 'stdio' : 'stream',
       command: server.stream.command,
       args: server.stream.args,
       env: server.stream.env
@@ -133,7 +138,6 @@ export function toTargetServerConfig(
 
   if (server.type === 'uvx-fastmcp' && server.uvxFastmcp) {
     return {
-      type: target === 'codex' ? 'stdio' : 'stream',
       command: 'uvx',
       args: ['fastmcp', 'run', server.uvxFastmcp.module, ...server.uvxFastmcp.args],
       env: server.uvxFastmcp.env

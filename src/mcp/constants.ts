@@ -1,4 +1,4 @@
-export const STORAGE_KEY = 'servers';
+export const STORAGE_KEY = 'serverStates';
 export const EXT_NS = 'mcpController';
 export const DEFAULT_GROUP = 'default';
 
@@ -13,5 +13,6 @@ export const COMMANDS = {
   exportClaude: 'mcpController.exportClaudeCode',
   exportCodex: 'mcpController.exportCodex',
   previewTemplate: 'mcpController.previewTemplate',
-  toggleWriteToWorkspace: 'mcpController.toggleWriteToWorkspace'
+  toggleWriteToWorkspace: 'mcpController.toggleWriteToWorkspace',
+  toggleDefinitionStorageScope: 'mcpController.toggleDefinitionStorageScope'
 } as const;

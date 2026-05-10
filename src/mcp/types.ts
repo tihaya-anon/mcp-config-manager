@@ -3,11 +3,10 @@ import * as vscode from 'vscode';
 export type McpType = 'http' | 'stream' | 'uvx-fastmcp';
 export type ExportTarget = 'claude-code' | 'codex';
 
-export interface McpServer {
+export interface McpServerDefinition {
   id: string;
   name: string;
   type: McpType;
-  enabled: boolean;
   meta?: {
     description?: string;
     group?: string;
@@ -15,6 +14,10 @@ export interface McpServer {
   http?: { url: string; headers?: Record<string, string> };
   stream?: { command: string; args: string[]; env?: Record<string, string> };
   uvxFastmcp?: { module: string; args: string[]; env?: Record<string, string> };
+}
+
+export interface McpServer extends McpServerDefinition {
+  enabled: boolean;
 }
 
 export interface ParseServerPayloadSuccess {
