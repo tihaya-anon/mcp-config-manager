@@ -121,15 +121,15 @@
       "properties": {
         "mcpController.export.claudeCodeTemplate": {
           "type": "string",
-          "default": "{{servers_json}}",
+          "default": "{\n  \"mcpServers\": {{json servers_by_name}}\n}",
           "scope": "resource",
-          "markdownDescription": "Template for Claude Code export. Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
+          "markdownDescription": "Template for Claude Code export. Supports variables, each/if blocks, and helpers: json, toml, tomlKey. Context includes full McpServer fields via servers / servers_by_name."
         },
         "mcpController.export.codexTemplate": {
           "type": "string",
-          "default": "# Codex MCP config\n{{servers_toml}}",
+          "default": "# Codex MCP config\n{{#each servers}}[mcp_servers.{{tomlKey name}}]\n{{#if resolved.type}}type = {{toml resolved.type}}\n{{/if}}{{#if resolved.url}}url = {{toml resolved.url}}\n{{/if}}{{#if resolved.command}}command = {{toml resolved.command}}\n{{/if}}{{#if resolved.args}}args = {{toml resolved.args}}\n{{/if}}{{#if resolved.headers}}headers = {{toml resolved.headers}}\n{{/if}}{{#if resolved.env}}env = {{toml resolved.env}}\n{{/if}}\n{{/each}}",
           "scope": "resource",
-          "markdownDescription": "Template for Codex export (TOML). Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
+          "markdownDescription": "Template for Codex export. Supports variables, each/if blocks, and helpers: json, toml, tomlKey. Context includes full McpServer fields via servers / servers_by_name."
         },
         "mcpController.export.writeToWorkspace": {
           "type": "boolean",
