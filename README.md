@@ -77,6 +77,95 @@ All enabled servers are injected as full `McpServer` objects plus resolved targe
 {{/each}}
 ```
 
+## Validation Examples
+
+Use these examples in `MCP Studio`, keep `enabled = true`, then run export and compare output.
+
+### 1) HTTP server example
+
+Input server:
+
+```json
+{
+  "id": "s-http-1",
+  "name": "weather_http",
+  "type": "http",
+  "enabled": true,
+  "meta": { "group": "default", "description": "weather service" },
+  "http": {
+    "url": "https://example.com/mcp",
+    "headers": { "Authorization": "Bearer token" }
+  }
+}
+```
+
+Expected Codex fragment:
+
+```toml
+[mcp_servers.weather_http]
+type = "http"
+url = "https://example.com/mcp"
+headers = { Authorization = "Bearer token" }
+```
+
+### 2) Stream server example
+
+Input server:
+
+```json
+{
+  "id": "s-stream-1",
+  "name": "local_stream",
+  "type": "stream",
+  "enabled": true,
+  "meta": { "group": "tools", "description": "local node server" },
+  "stream": {
+    "command": "node",
+    "args": ["server.js"],
+    "env": { "API_KEY": "abc123" }
+  }
+}
+```
+
+Expected Codex fragment:
+
+```toml
+[mcp_servers.local_stream]
+type = "stdio"
+command = "node"
+args = ["server.js"]
+env = { API_KEY = "abc123" }
+```
+
+### 3) UVX FastMCP example
+
+Input server:
+
+```json
+{
+  "id": "s-uvx-1",
+  "name": "fastmcp_demo",
+  "type": "uvx-fastmcp",
+  "enabled": true,
+  "meta": { "group": "tools", "description": "uvx runtime" },
+  "uvxFastmcp": {
+    "module": "my_server.main:app",
+    "args": ["--port", "8001"],
+    "env": { "MODE": "prod" }
+  }
+}
+```
+
+Expected Codex fragment:
+
+```toml
+[mcp_servers.fastmcp_demo]
+type = "stdio"
+command = "uvx"
+args = ["fastmcp", "run", "my_server.main:app", "--port", "8001"]
+env = { MODE = "prod" }
+```
+
 ## Settings
 
 - `mcpController.export.claudeCodeTemplate`
