@@ -16,7 +16,7 @@
       "activitybar": [
         {
           "id": "mcpConfigManager",
-          "title": "MCP",
+          "title": "MCP Manager",
           "icon": "resources/brand.svg"
         }
       ]
@@ -128,12 +128,12 @@
         },
         {
           "command": "mcpConfigManager.editMcp",
-          "when": "view == mcpConfigManager.servers",
+          "when": "view == mcpConfigManager.servers && (viewItem == mcpServerEnabled || viewItem == mcpServerDisabled)",
           "group": "inline@2"
         },
         {
           "command": "mcpConfigManager.removeMcp",
-          "when": "view == mcpConfigManager.servers",
+          "when": "view == mcpConfigManager.servers && (viewItem == mcpServerEnabled || viewItem == mcpServerDisabled)",
           "group": "inline@3"
         }
       ]
