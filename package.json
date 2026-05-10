@@ -1,0 +1,36 @@
+{
+  "name": "mcp-controller-extension",
+  "displayName": "MCP Controller Extension",
+  "description": "A VS Code extension scaffold in the current directory.",
+  "version": "0.0.1",
+  "publisher": "your-publisher",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "mcpController.helloWorld",
+        "title": "MCP Controller: Hello World"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/vscode": "^1.90.0",
+    "eslint": "^9.4.0",
+    "typescript": "^5.4.5"
+  }
+}
