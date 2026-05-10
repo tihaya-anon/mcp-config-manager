@@ -183,6 +183,9 @@ Note:
 - `mcpController.definitionStorageScope` controls where definition data is written:
   - `workspace`: write `mcpController.servers` to workspace `settings.json`
   - `user`: write `mcpController.servers` to user settings
+- Read behavior is merged from both sources:
+  - user definitions are loaded first
+  - workspace definitions override user definitions when `id` is the same
 - Runtime `enabled/disabled` state is stored in extension local state (`globalState`) and is not tracked in git.
 - `Tools` view shows current scope and provides toggle action.
 

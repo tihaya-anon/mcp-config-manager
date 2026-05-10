@@ -15,8 +15,9 @@ export class McpItem extends vscode.TreeItem {
     super(server.name, vscode.TreeItemCollapsibleState.None);
 
     this.description = `${server.type}`;
+    const source = server.sourceScope ? ` [${server.sourceScope}]` : '';
     this.tooltip =
-      server.meta?.description || `${server.name} (${server.type})`;
+      (server.meta?.description || `${server.name} (${server.type})`) + source;
     this.iconPath = new vscode.ThemeIcon(
       server.enabled ? "circle-filled" : "circle-outline",
     );

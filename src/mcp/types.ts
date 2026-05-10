@@ -18,6 +18,7 @@ export interface McpServerDefinition {
 
 export interface McpServer extends McpServerDefinition {
   enabled: boolean;
+  sourceScope?: 'workspace' | 'user';
 }
 
 export interface ParseServerPayloadSuccess {

@@ -3,12 +3,13 @@ import { DEFAULT_GROUP, EXT_NS, STORAGE_KEY } from './constants';
 import { McpServer, McpServerDefinition } from './types';
 
 type ServerStates = Record<string, { enabled: boolean }>;
+type DefinitionScope = 'workspace' | 'user';
 
 export class McpStore {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
   list(): McpServer[] {
-    const definitions = this.getDefinitions();
+    const definitions = this.getMergedDefinitions();
     const states = this.getStates();
 
     return definitions.map((definition) => ({
@@ -18,23 +19,28 @@ export class McpStore {
   }
 
   async upsert(server: McpServer): Promise<void> {
-    const definitions = this.getDefinitions();
+    const targetScope = this.getDefinitionStorageScope();
+    const scopedDefinitions = this.getDefinitionsFromScope(targetScope);
     const definition: McpServerDefinition = toDefinition(server);
-    const index = definitions.findIndex((item) => item.id === definition.id);
+    const index = scopedDefinitions.findIndex((item) => item.id === definition.id);
 
     if (index >= 0) {
-      definitions[index] = definition;
+      scopedDefinitions[index] = definition;
     } else {
-      definitions.push(definition);
+      scopedDefinitions.push(definition);
     }
 
-    await this.saveDefinitions(definitions);
+    await this.saveDefinitions(scopedDefinitions, targetScope);
     await this.setEnabled(server.id, server.enabled);
   }
 
   async remove(id: string): Promise<void> {
-    const definitions = this.getDefinitions().filter((server) => server.id !== id);
-    await this.saveDefinitions(definitions);
+    const targetScope = this.getDefinitionStorageScope();
+    const scopedDefinitions = this
+      .getDefinitionsFromScope(targetScope)
+      .filter((server) => server.id !== id);
+
+    await this.saveDefinitions(scopedDefinitions, targetScope);
 
     const states = this.getStates();
     delete states[id];
@@ -47,9 +53,51 @@ export class McpStore {
     await this.saveStates(states);
   }
 
-  private getDefinitions(): McpServerDefinition[] {
+  getDefinitionStorageScope(): DefinitionScope {
     const config = vscode.workspace.getConfiguration(EXT_NS);
-    const value = config.get<unknown[]>('servers', []);
+    const scope = config.get<string>('definitionStorageScope', 'workspace');
+    return scope === 'user' ? 'user' : 'workspace';
+  }
+
+  async toggleDefinitionStorageScope(): Promise<DefinitionScope> {
+    const current = this.getDefinitionStorageScope();
+    const next: DefinitionScope = current === 'workspace' ? 'user' : 'workspace';
+    const config = vscode.workspace.getConfiguration(EXT_NS);
+    await config.update('definitionStorageScope', next, vscode.ConfigurationTarget.Global);
+    return next;
+  }
+
+  private getMergedDefinitions(): McpServer[] {
+    const userDefinitions = this.getDefinitionsFromScope('user').map((item) => ({
+      ...item,
+      sourceScope: 'user' as const
+    }));
+
+    const workspaceDefinitions = this.getDefinitionsFromScope('workspace').map((item) => ({
+      ...item,
+      sourceScope: 'workspace' as const
+    }));
+
+    const byId = new Map<string, McpServer>();
+
+    for (const definition of userDefinitions) {
+      byId.set(definition.id, definition as McpServer);
+    }
+
+    for (const definition of workspaceDefinitions) {
+      byId.set(definition.id, definition as McpServer);
+    }
+
+    return Array.from(byId.values());
+  }
+
+  private getDefinitionsFromScope(scope: DefinitionScope): McpServerDefinition[] {
+    const config = vscode.workspace.getConfiguration(EXT_NS);
+    const inspect = config.inspect<unknown[]>('servers');
+
+    const value = scope === 'workspace'
+      ? inspect?.workspaceValue ?? []
+      : inspect?.globalValue ?? [];
 
     if (!Array.isArray(value)) {
       return [];
@@ -60,9 +108,11 @@ export class McpStore {
       .filter((item): item is McpServerDefinition => item !== undefined);
   }
 
-  private async saveDefinitions(list: McpServerDefinition[]): Promise<void> {
-    const target = this.getDefinitionConfigTarget();
+  private async saveDefinitions(list: McpServerDefinition[], scope: DefinitionScope): Promise<void> {
     const config = vscode.workspace.getConfiguration(EXT_NS);
+    const target = scope === 'user'
+      ? vscode.ConfigurationTarget.Global
+      : vscode.ConfigurationTarget.Workspace;
     await config.update('servers', list, target);
   }
 
@@ -72,26 +122,6 @@ export class McpStore {
 
   private async saveStates(states: ServerStates): Promise<void> {
     await this.context.globalState.update(STORAGE_KEY, states);
-  }
-
-  getDefinitionStorageScope(): 'workspace' | 'user' {
-    const config = vscode.workspace.getConfiguration(EXT_NS);
-    const scope = config.get<string>('definitionStorageScope', 'workspace');
-    return scope === 'user' ? 'user' : 'workspace';
-  }
-
-  async toggleDefinitionStorageScope(): Promise<'workspace' | 'user'> {
-    const current = this.getDefinitionStorageScope();
-    const next = current === 'workspace' ? 'user' : 'workspace';
-    const config = vscode.workspace.getConfiguration(EXT_NS);
-    await config.update('definitionStorageScope', next, vscode.ConfigurationTarget.Global);
-    return next;
-  }
-
-  private getDefinitionConfigTarget(): vscode.ConfigurationTarget {
-    return this.getDefinitionStorageScope() === 'user'
-      ? vscode.ConfigurationTarget.Global
-      : vscode.ConfigurationTarget.Workspace;
   }
 }
 
