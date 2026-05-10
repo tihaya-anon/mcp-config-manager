@@ -15,22 +15,15 @@ export async function exportToFile(
   }
 
   const exportText = buildPreviewText(enabledServers, target);
-  const isToml = target === 'codex';
-
-  const uri = await vscode.window.showSaveDialog({
-    title: `Export MCP for ${target}`,
-    saveLabel: 'Export',
-    filters: isToml ? { TOML: ['toml'] } : { JSON: ['json'] },
-    defaultUri: vscode.Uri.file(isToml ? `${target}-mcp.toml` : `${target}-mcp.json`)
-  });
-
-  if (!uri) {
+  const targetUri = await resolveExportUri(target);
+  if (!targetUri) {
     return;
   }
 
-  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(exportText));
+  await ensureParentDir(targetUri);
+  await vscode.workspace.fs.writeFile(targetUri, new TextEncoder().encode(exportText));
   void vscode.window.showInformationMessage(
-    `Exported ${enabledServers.length} servers to ${uri.fsPath}`
+    `Exported ${enabledServers.length} servers to ${targetUri.fsPath}`
   );
 }
 
@@ -99,11 +92,11 @@ function buildServersToml(servers: McpServer[], target: ExportTarget): string {
       lines.push(`${key} = ${toTomlValue(value)}`);
     }
 
-    if (server.meta?.description) {
+    if (target !== 'codex' && server.meta?.description) {
       lines.push(`description = ${toTomlValue(server.meta.description)}`);
     }
 
-    if (server.meta?.group) {
+    if (target !== 'codex' && server.meta?.group) {
       lines.push(`group = ${toTomlValue(server.meta.group)}`);
     }
 
@@ -143,4 +136,39 @@ function toTomlValue(value: unknown): string {
 
 function escapeTomlString(input: string): string {
   return input.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+}
+
+async function resolveExportUri(target: ExportTarget): Promise<vscode.Uri | undefined> {
+  const config = vscode.workspace.getConfiguration(EXT_NS);
+  const writeToWorkspace = config.get<boolean>('export.writeToWorkspace', true);
+  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+  if (writeToWorkspace && workspaceFolder) {
+    if (target === 'claude-code') {
+      return vscode.Uri.joinPath(workspaceFolder.uri, '.mcp.json');
+    }
+    return vscode.Uri.joinPath(workspaceFolder.uri, '.codex', 'config.toml');
+  }
+
+  const isToml = target === 'codex';
+  return vscode.window.showSaveDialog({
+    title: `Export MCP for ${target}`,
+    saveLabel: 'Export',
+    filters: isToml ? { TOML: ['toml'] } : { JSON: ['json'] },
+    defaultUri: vscode.Uri.file(isToml ? `${target}-mcp.toml` : `${target}-mcp.json`)
+  });
+}
+
+async function ensureParentDir(targetUri: vscode.Uri): Promise<void> {
+  const path = targetUri.path;
+  const separatorIndex = path.lastIndexOf('/');
+  if (separatorIndex <= 0) {
+    return;
+  }
+  const parentUri = targetUri.with({ path: path.slice(0, separatorIndex) });
+  try {
+    await vscode.workspace.fs.stat(parentUri);
+  } catch {
+    await vscode.workspace.fs.createDirectory(parentUri);
+  }
 }

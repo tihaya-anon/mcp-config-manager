@@ -22,8 +22,8 @@ export class McpItem extends vscode.TreeItem {
     );
     this.contextValue = server.enabled ? "mcpServerEnabled" : "mcpServerDisabled";
     this.command = {
-      command: COMMANDS.editMcp,
-      title: "Edit MCP",
+      command: COMMANDS.toggleMcp,
+      title: "Toggle MCP",
       arguments: [server],
     };
   }
@@ -89,6 +89,7 @@ export class ToolProvider implements vscode.TreeDataProvider<ToolItem> {
     return [
       new ToolItem("Open Studio", COMMANDS.openStudio, "layout"),
       new ToolItem("Add Server", COMMANDS.addMcp, "add"),
+      new ToolItem("Toggle Workspace Write", COMMANDS.toggleWriteToWorkspace, "settings-gear"),
       new ToolItem("Export Claude", COMMANDS.exportClaude, "export"),
       new ToolItem("Export Codex", COMMANDS.exportCodex, "export"),
       new ToolItem("Preview Template", COMMANDS.previewTemplate, "eye"),

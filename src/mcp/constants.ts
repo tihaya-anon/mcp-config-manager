@@ -12,5 +12,6 @@ export const COMMANDS = {
   removeMcp: 'mcpController.removeMcp',
   exportClaude: 'mcpController.exportClaudeCode',
   exportCodex: 'mcpController.exportCodex',
-  previewTemplate: 'mcpController.previewTemplate'
+  previewTemplate: 'mcpController.previewTemplate',
+  toggleWriteToWorkspace: 'mcpController.toggleWriteToWorkspace'
 } as const;

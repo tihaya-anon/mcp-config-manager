@@ -85,23 +85,28 @@
         "command": "mcpController.previewTemplate",
         "title": "MCP: Preview Template",
         "icon": "$(eye)"
+      },
+      {
+        "command": "mcpController.toggleWriteToWorkspace",
+        "title": "MCP: Toggle Write to Workspace",
+        "icon": "$(settings-gear)"
       }
     ],
     "menus": {
       "view/item/context": [
         {
-          "command": "mcpController.editMcp",
-          "when": "view == mcpController.servers",
-          "group": "inline@1"
-        },
-        {
           "command": "mcpController.toggleMcpOn",
           "when": "view == mcpController.servers && viewItem == mcpServerDisabled",
-          "group": "inline@2"
+          "group": "inline@1"
         },
         {
           "command": "mcpController.toggleMcpOff",
           "when": "view == mcpController.servers && viewItem == mcpServerEnabled",
+          "group": "inline@1"
+        },
+        {
+          "command": "mcpController.editMcp",
+          "when": "view == mcpController.servers",
           "group": "inline@2"
         },
         {
@@ -117,12 +122,20 @@
         "mcpController.export.claudeCodeTemplate": {
           "type": "string",
           "default": "{{servers_json}}",
+          "scope": "resource",
           "markdownDescription": "Template for Claude Code export. Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
         },
         "mcpController.export.codexTemplate": {
           "type": "string",
           "default": "# Codex MCP config\n{{servers_toml}}",
+          "scope": "resource",
           "markdownDescription": "Template for Codex export (TOML). Supported placeholders: `{{servers_json}}`, `{{servers_toml}}`, `{{target}}`."
+        },
+        "mcpController.export.writeToWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "When true, export writes directly to workspace files (`.mcp.json` for Claude Code, `.codex/config.toml` for Codex)."
         }
       }
     }

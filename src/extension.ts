@@ -101,6 +101,24 @@ function registerCommands(
       await previewTemplate(store.list());
     })
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.toggleWriteToWorkspace, async () => {
+      const config = vscode.workspace.getConfiguration('mcpController');
+      const current = config.get<boolean>('export.writeToWorkspace', true);
+      const target = !current;
+
+      await config.update(
+        'export.writeToWorkspace',
+        target,
+        vscode.ConfigurationTarget.Workspace
+      );
+
+      void vscode.window.showInformationMessage(
+        `writeToWorkspace is now ${target ? 'ON' : 'OFF'} (workspace setting).`
+      );
+    })
+  );
 }
 
 async function resolveServerSelection(
