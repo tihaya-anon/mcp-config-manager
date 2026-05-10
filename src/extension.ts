@@ -47,15 +47,17 @@ function registerCommands(
 
   context.subscriptions.push(
     vscode.commands.registerCommand(COMMANDS.toggleMcp, async (item?: McpServer | McpItem) => {
-      const server = await resolveServerSelection(store, item, 'Select a server to toggle');
-
-      if (!server) {
-        return;
-      }
-
-      server.enabled = !server.enabled;
-      await store.upsert(server);
-      serverProvider.refresh();
+      await toggleServer(store, serverProvider, item, 'Select a server to toggle');
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.toggleMcpOn, async (item?: McpServer | McpItem) => {
+      await setServerEnabled(store, serverProvider, item, true);
+    })
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(COMMANDS.toggleMcpOff, async (item?: McpServer | McpItem) => {
+      await setServerEnabled(store, serverProvider, item, false);
     })
   );
 
@@ -130,4 +132,38 @@ async function resolveServerSelection(
   );
 
   return pick?.server;
+}
+
+async function toggleServer(
+  store: McpStore,
+  serverProvider: ServerProvider,
+  item: McpServer | McpItem | undefined,
+  placeHolder: string
+): Promise<void> {
+  const server = await resolveServerSelection(store, item, placeHolder);
+
+  if (!server) {
+    return;
+  }
+
+  server.enabled = !server.enabled;
+  await store.upsert(server);
+  serverProvider.refresh();
+}
+
+async function setServerEnabled(
+  store: McpStore,
+  serverProvider: ServerProvider,
+  item: McpServer | McpItem | undefined,
+  enabled: boolean
+): Promise<void> {
+  const server = await resolveServerSelection(store, item, 'Select a server');
+
+  if (!server || server.enabled === enabled) {
+    return;
+  }
+
+  server.enabled = enabled;
+  await store.upsert(server);
+  serverProvider.refresh();
 }

@@ -20,7 +20,7 @@ export class McpItem extends vscode.TreeItem {
     this.iconPath = new vscode.ThemeIcon(
       server.enabled ? "circle-filled" : "circle-outline",
     );
-    this.contextValue = "mcpServer";
+    this.contextValue = server.enabled ? "mcpServerEnabled" : "mcpServerDisabled";
     this.command = {
       command: COMMANDS.editMcp,
       title: "Edit MCP",

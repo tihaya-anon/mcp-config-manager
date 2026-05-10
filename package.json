@@ -57,6 +57,16 @@
         "icon": "$(run)"
       },
       {
+        "command": "mcpController.toggleMcpOn",
+        "title": "MCP: Enable Server",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "mcpController.toggleMcpOff",
+        "title": "MCP: Disable Server",
+        "icon": "$(debug-stop)"
+      },
+      {
         "command": "mcpController.removeMcp",
         "title": "MCP: Remove Server",
         "icon": "$(trash)"
@@ -85,8 +95,13 @@
           "group": "inline@1"
         },
         {
-          "command": "mcpController.toggleMcp",
-          "when": "view == mcpController.servers",
+          "command": "mcpController.toggleMcpOn",
+          "when": "view == mcpController.servers && viewItem == mcpServerDisabled",
+          "group": "inline@2"
+        },
+        {
+          "command": "mcpController.toggleMcpOff",
+          "when": "view == mcpController.servers && viewItem == mcpServerEnabled",
           "group": "inline@2"
         },
         {

@@ -7,6 +7,8 @@ export const COMMANDS = {
   addMcp: 'mcpController.addMcp',
   editMcp: 'mcpController.editMcp',
   toggleMcp: 'mcpController.toggleMcp',
+  toggleMcpOn: 'mcpController.toggleMcpOn',
+  toggleMcpOff: 'mcpController.toggleMcpOff',
   removeMcp: 'mcpController.removeMcp',
   exportClaude: 'mcpController.exportClaudeCode',
   exportCodex: 'mcpController.exportCodex',
