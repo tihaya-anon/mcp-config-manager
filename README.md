@@ -77,100 +77,105 @@ All enabled servers are injected as full `McpServer` objects plus resolved targe
 {{/each}}
 ```
 
-## Validation Examples
+## Validation Examples (Real MCP Servers)
 
-Use these examples in `MCP Studio`, keep `enabled = true`, then run export and compare output.
+These examples use real MCP servers from official docs/repos, so you can export and then open Codex/Claude Code to verify directly.
 
-### 1) HTTP server example
+### 1) HTTP example: OpenAI Docs MCP
 
-Input server:
+Source:
+- OpenAI Docs MCP server URL `https://developers.openai.com/mcp` (OpenAI docs)
+
+Input server in Studio:
 
 ```json
 {
-  "id": "s-http-1",
-  "name": "weather_http",
+  "id": "real-http-1",
+  "name": "openaiDeveloperDocs",
   "type": "http",
   "enabled": true,
-  "meta": { "group": "default", "description": "weather service" },
+  "meta": { "group": "remote", "description": "OpenAI Docs MCP" },
   "http": {
-    "url": "https://example.com/mcp",
-    "headers": { "Authorization": "Bearer token" }
+    "url": "https://developers.openai.com/mcp"
   }
 }
 ```
 
-Expected Codex fragment:
+Expected Codex TOML fragment:
 
 ```toml
-[mcp_servers.weather_http]
+[mcp_servers.openaiDeveloperDocs]
 type = "http"
-url = "https://example.com/mcp"
-headers = { Authorization = "Bearer token" }
+url = "https://developers.openai.com/mcp"
 ```
 
-### 2) Stream server example
+### 2) Stream (stdio) example: Filesystem server via npx
 
-Input server:
+Source:
+- `@modelcontextprotocol/server-filesystem` example from `modelcontextprotocol/servers`
+
+Input server in Studio:
 
 ```json
 {
-  "id": "s-stream-1",
-  "name": "local_stream",
+  "id": "real-stream-1",
+  "name": "filesystem",
   "type": "stream",
   "enabled": true,
-  "meta": { "group": "tools", "description": "local node server" },
+  "meta": { "group": "local", "description": "MCP filesystem server" },
   "stream": {
-    "command": "node",
-    "args": ["server.js"],
-    "env": { "API_KEY": "abc123" }
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/ABS/PATH/ALLOWED_DIR"],
+    "env": {}
   }
 }
 ```
 
-Expected Codex fragment:
+Expected Codex TOML fragment (`stream` maps to `stdio` for codex):
 
 ```toml
-[mcp_servers.local_stream]
+[mcp_servers.filesystem]
 type = "stdio"
-command = "node"
-args = ["server.js"]
-env = { API_KEY = "abc123" }
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "/ABS/PATH/ALLOWED_DIR"]
+env = {  }
 ```
 
-### 3) UVX FastMCP example
+### 3) UVX FastMCP-style local example: Git server via uvx
 
-Input server:
+Source:
+- `uvx mcp-server-git --repository <path>` example from `modelcontextprotocol/servers`
+
+Input server in Studio:
 
 ```json
 {
-  "id": "s-uvx-1",
-  "name": "fastmcp_demo",
+  "id": "real-uvx-1",
+  "name": "git",
   "type": "uvx-fastmcp",
   "enabled": true,
-  "meta": { "group": "tools", "description": "uvx runtime" },
+  "meta": { "group": "local", "description": "MCP git server" },
   "uvxFastmcp": {
-    "module": "my_server.main:app",
-    "args": ["--port", "8001"],
-    "env": { "MODE": "prod" }
+    "module": "mcp-server-git",
+    "args": ["--repository", "/ABS/PATH/REPO"],
+    "env": {}
   }
 }
 ```
 
-Expected Codex fragment:
+Expected Codex TOML fragment:
 
 ```toml
-[mcp_servers.fastmcp_demo]
+[mcp_servers.git]
 type = "stdio"
 command = "uvx"
-args = ["fastmcp", "run", "my_server.main:app", "--port", "8001"]
-env = { MODE = "prod" }
+args = ["fastmcp", "run", "mcp-server-git", "--repository", "/ABS/PATH/REPO"]
+env = {  }
 ```
 
-## Settings
-
-- `mcpController.export.claudeCodeTemplate`
-- `mcpController.export.codexTemplate`
-- `mcpController.export.writeToWorkspace`
+Note:
+- The `uvx-fastmcp` mapping in this extension is `uvx fastmcp run <module> ...args`.
+- If your installed server expects plain `uvx mcp-server-git ...`, use `type=stream` with `command=uvx` and `args=["mcp-server-git", "--repository", "..."]`.
 
 ## Build
 
