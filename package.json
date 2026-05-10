@@ -1,6 +1,6 @@
 {
-  "name": "mcp-controller-extension",
-  "displayName": "MCP Controller Extension",
+  "name": "mcp-config-manager-extension",
+  "displayName": "MCP Config Manager",
   "description": "Manage MCP servers and export config for Claude Code/Codex.",
   "version": "0.2.0",
   "publisher": "your-publisher",
@@ -15,21 +15,21 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "mcpController",
+          "id": "mcpConfigManager",
           "title": "MCP",
           "icon": "$(plug)"
         }
       ]
     },
     "views": {
-      "mcpController": [
+      "mcpConfigManager": [
         {
-          "id": "mcpController.servers",
+          "id": "mcpConfigManager.servers",
           "name": "Servers",
           "icon": "$(server)"
         },
         {
-          "id": "mcpController.tools",
+          "id": "mcpConfigManager.tools",
           "name": "Tools",
           "icon": "$(tools)"
         }
@@ -37,67 +37,67 @@
     },
     "commands": [
       {
-        "command": "mcpController.openStudio",
+        "command": "mcpConfigManager.openStudio",
         "title": "MCP: Open Studio",
         "icon": "$(layout)"
       },
       {
-        "command": "mcpController.addMcp",
+        "command": "mcpConfigManager.addMcp",
         "title": "MCP: Add Server",
         "icon": "$(add)"
       },
       {
-        "command": "mcpController.editMcp",
+        "command": "mcpConfigManager.editMcp",
         "title": "MCP: Edit Server",
         "icon": "$(edit)"
       },
       {
-        "command": "mcpController.toggleMcp",
+        "command": "mcpConfigManager.toggleMcp",
         "title": "MCP: Toggle Server",
         "icon": "$(run)"
       },
       {
-        "command": "mcpController.toggleMcpOn",
+        "command": "mcpConfigManager.toggleMcpOn",
         "title": "MCP: Enable Server",
         "icon": "$(debug-start)"
       },
       {
-        "command": "mcpController.toggleMcpOff",
+        "command": "mcpConfigManager.toggleMcpOff",
         "title": "MCP: Disable Server",
         "icon": "$(debug-stop)"
       },
       {
-        "command": "mcpController.removeMcp",
+        "command": "mcpConfigManager.removeMcp",
         "title": "MCP: Remove Server",
         "icon": "$(trash)"
       },
       {
-        "command": "mcpController.exportClaudeCode",
+        "command": "mcpConfigManager.exportClaudeCode",
         "title": "MCP: Export for Claude Code",
         "icon": "$(export)"
       },
       {
-        "command": "mcpController.exportCodex",
+        "command": "mcpConfigManager.exportCodex",
         "title": "MCP: Export for Codex",
         "icon": "$(export)"
       },
       {
-        "command": "mcpController.previewTemplate",
+        "command": "mcpConfigManager.previewTemplate",
         "title": "MCP: Preview Template",
         "icon": "$(eye)"
       },
       {
-        "command": "mcpController.toggleExportPathMode",
+        "command": "mcpConfigManager.toggleExportPathMode",
         "title": "MCP: Toggle Export Path Mode",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "mcpController.toggleDefinitionStorageScope",
+        "command": "mcpConfigManager.toggleDefinitionStorageScope",
         "title": "MCP: Toggle Definition Storage Scope",
         "icon": "$(database)"
       },
       {
-        "command": "mcpController.refreshServers",
+        "command": "mcpConfigManager.refreshServers",
         "title": "MCP: Refresh Servers",
         "icon": "$(refresh)"
       }
@@ -105,55 +105,55 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "mcpController.toggleMcpOn",
-          "when": "view == mcpController.servers && viewItem == mcpServerDisabled",
+          "command": "mcpConfigManager.toggleMcpOn",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpServerDisabled",
           "group": "inline@1"
         },
         {
-          "command": "mcpController.toggleMcpOff",
-          "when": "view == mcpController.servers && viewItem == mcpServerEnabled",
+          "command": "mcpConfigManager.toggleMcpOff",
+          "when": "view == mcpConfigManager.servers && viewItem == mcpServerEnabled",
           "group": "inline@1"
         },
         {
-          "command": "mcpController.editMcp",
-          "when": "view == mcpController.servers",
+          "command": "mcpConfigManager.editMcp",
+          "when": "view == mcpConfigManager.servers",
           "group": "inline@2"
         },
         {
-          "command": "mcpController.removeMcp",
-          "when": "view == mcpController.servers",
+          "command": "mcpConfigManager.removeMcp",
+          "when": "view == mcpConfigManager.servers",
           "group": "inline@3"
         }
       ]
     },
     "configuration": {
-      "title": "MCP Controller",
+      "title": "MCP Config Manager",
       "properties": {
-        "mcpController.export.claudeCodeTemplate": {
+        "mcpConfigManager.export.claudeCodeTemplate": {
           "type": "string",
           "default": "{\n  \"mcpServers\": {{json servers_resolved_by_name}}\n}",
           "scope": "resource",
           "markdownDescription": "Template for Claude Code export. Supports variables, each/if blocks, and helpers: json, toml, tomlKey. Use servers_resolved_by_name for Claude-compatible output; full McpServer fields are in servers / servers_by_name."
         },
-        "mcpController.export.codexTemplate": {
+        "mcpConfigManager.export.codexTemplate": {
           "type": "string",
           "default": "# Codex MCP config\n{{#each servers}}[mcp_servers.{{tomlKey name}}]\n{{#if resolved.url}}url = {{toml resolved.url}}\n{{/if}}{{#if resolved.headers}}http_headers = {{toml resolved.headers}}\n{{/if}}{{#if resolved.command}}command = {{toml resolved.command}}\n{{/if}}{{#if resolved.args}}args = {{toml resolved.args}}\n{{/if}}{{#if resolved.env}}env = {{toml resolved.env}}\n{{/if}}\n{{/each}}",
           "scope": "resource",
           "markdownDescription": "Template for Codex export. Supports variables, each/if blocks, and helpers: json, toml, tomlKey. Use resolved fields for Codex-compatible output; full McpServer fields are in servers / servers_by_name."
         },
-        "mcpController.export.writeToWorkspace": {
+        "mcpConfigManager.export.writeToWorkspace": {
           "type": "boolean",
           "default": true,
           "scope": "resource",
           "markdownDescription": "When true, export writes directly to workspace files (`.mcp.json` for Claude Code, `.codex/config.toml` for Codex)."
         },
-        "mcpController.servers": {
+        "mcpConfigManager.servers": {
           "type": "array",
           "default": [],
           "scope": "resource",
           "markdownDescription": "Workspace-tracked MCP server definitions (without runtime enabled/disabled state)."
         },
-        "mcpController.definitionStorageScope": {
+        "mcpConfigManager.definitionStorageScope": {
           "type": "string",
           "enum": [
             "workspace",

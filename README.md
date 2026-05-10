@@ -1,4 +1,4 @@
-# MCP Controller Extension
+# MCP Config Manager
 
 VS Code extension for MCP server lifecycle management and configurable export.
 
@@ -28,7 +28,7 @@ VS Code extension for MCP server lifecycle management and configurable export.
   - Claude Code default path: `.mcp.json`
   - Codex default path: `.codex/config.toml`
 - Two-layer config model:
-  - Definitions are stored in workspace `settings.json` via `mcpController.servers` (trackable in git)
+  - Definitions are stored in workspace `settings.json` via `mcpConfigManager.servers` (trackable in git)
   - Runtime enable/disable state is stored in extension local state (not tracked)
 
 ## Template Engine
@@ -183,9 +183,9 @@ Note:
 
 ## Definition Scope
 
-- `mcpController.definitionStorageScope` controls where definition data is written:
-  - `workspace`: write `mcpController.servers` to workspace `settings.json`
-  - `user`: write `mcpController.servers` to user settings
+- `mcpConfigManager.definitionStorageScope` controls where definition data is written:
+  - `workspace`: write `mcpConfigManager.servers` to workspace `settings.json`
+  - `user`: write `mcpConfigManager.servers` to user settings
 - Read behavior is merged from both sources:
   - user definitions are loaded first
   - workspace definitions override user definitions when `id` is the same

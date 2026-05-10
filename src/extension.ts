@@ -36,11 +36,11 @@ function createAppContext(context: vscode.ExtensionContext): AppContext {
 }
 
 function createViews(app: AppContext): void {
-  vscode.window.createTreeView('mcpController.servers', {
+  vscode.window.createTreeView('mcpConfigManager.servers', {
     treeDataProvider: app.serverProvider
   });
 
-  vscode.window.createTreeView('mcpController.tools', {
+  vscode.window.createTreeView('mcpConfigManager.tools', {
     treeDataProvider: app.toolProvider
   });
 }
@@ -97,8 +97,8 @@ function registerCommands(context: vscode.ExtensionContext, app: AppContext): vo
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (
-        event.affectsConfiguration('mcpController.servers') ||
-        event.affectsConfiguration('mcpController.definitionStorageScope')
+        event.affectsConfiguration('mcpConfigManager.servers') ||
+        event.affectsConfiguration('mcpConfigManager.definitionStorageScope')
       ) {
         refreshAllViews(app);
       }
@@ -196,7 +196,7 @@ async function resolveServerSelection(
 }
 
 async function toggleExportPathMode(): Promise<void> {
-  const config = vscode.workspace.getConfiguration('mcpController');
+  const config = vscode.workspace.getConfiguration('mcpConfigManager');
   const current = config.get<boolean>('export.writeToWorkspace', true);
   const target = !current;
 
